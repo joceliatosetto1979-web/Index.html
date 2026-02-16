@@ -8,45 +8,29 @@
         :root { --bg: #000; --green: #32CD32; --blue: #1E90FF; --pink: #FF1493; --orange: #FF8C00; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
         body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; overflow: hidden; height: 100vh; user-select: none; }
-
         .header { display: flex; align-items: center; justify-content: space-between; padding: 5px 15px; height: 45px; }
         .btn-sair { background: var(--orange); border: none; color: white; padding: 5px 20px; border-radius: 20px; font-weight: bold; font-size: 11px; }
-        
         .sliders { display: flex; gap: 15px; padding: 0 15px; }
         .slider-item { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: bold; }
         input[type="range"] { flex: 1; accent-color: var(--green); height: 10px; background: #333; border-radius: 5px; appearance: none; }
-
         .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 8px; }
-        .btn-act { height: 48px; border: none; border-radius: 25px; color: white; font-weight: bold; font-size: 12px; text-transform: uppercase; cursor: pointer; }
+        .btn-act { height: 48px; border: none; border-radius: 25px; color: white; font-weight: bold; font-size: 12px; text-transform: uppercase; }
         .btn-mic { background: var(--pink); }
         .btn-mic.recording { background: #fff; color: red; animation: blink 0.8s infinite; }
-
         .keyboard-wrapper { width: 100%; overflow-x: auto; height: calc(100vh - 190px); background: #111; position: relative; }
         .keyboard { display: flex; min-width: 1500px; height: 100%; position: relative; padding: 0 10px; }
-        
-        .key { 
-            flex: 1; min-width: 95px; background: linear-gradient(to bottom, #eee 0%, #fff 100%); border: 1px solid #888; 
-            border-radius: 0 0 10px 10px; position: relative; display: flex; 
-            align-items: flex-end; justify-content: center; padding-bottom: 20px; 
-            color: #333; font-size: 13px; font-weight: bold; z-index: 1;
-        }
+        .key { flex: 1; min-width: 95px; background: linear-gradient(to bottom, #eee 0%, #fff 100%); border: 1px solid #888; border-radius: 0 0 10px 10px; position: relative; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 20px; color: #333; font-size: 13px; font-weight: bold; z-index: 1; }
         .key.active { background: #ddd; box-shadow: inset 0 0 30px var(--green); }
-
-        .black-key { 
-            position: absolute; background: linear-gradient(to bottom, #444 0%, #000 100%); 
-            width: 55px; height: 60%; z-index: 2; border-radius: 0 0 6px 6px; 
-            border: 2px solid #222; box-shadow: 3px 5px 10px rgba(0,0,0,0.6);
-            margin-left: -27.5px; display: flex; align-items: flex-end; justify-content: center;
-            padding-bottom: 10px; color: white; font-size: 10px;
-        }
+        .black-key { position: absolute; background: linear-gradient(to bottom, #444 0%, #000 100%); width: 55px; height: 60%; z-index: 2; border-radius: 0 0 6px 6px; border: 2px solid #222; box-shadow: 3px 5px 10px rgba(0,0,0,0.6); margin-left: -27.5px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px; color: white; font-size: 10px; }
         .black-key.active { background: #222; box-shadow: inset 0 0 20px var(--green); }
+        @keyframes blink { 50% { opacity: 0.4; } }
     </style>
 </head>
 <body>
 
 <div class="header">
     <button class="btn-sair" onclick="location.reload()">SAIR</button>
-    <div style="color: var(--green); font-weight: bold; font-size: 12px;">TIME-STRETCH FIXED • LOOP OVERLAP</div>
+    <div style="color: var(--green); font-weight: bold; font-size: 12px;">CONSTANT SPEED • NO-GAP LOOP</div>
     <div style="color: #00BFFF; font-size: 10px;">● MASTER OUT</div>
 </div>
 
@@ -56,7 +40,7 @@
 </div>
 
 <div class="buttons">
-    <button class="btn-act" style="background:var(--blue)" onclick="toggleEco()">ECO: OFF</button>
+    <button class="btn-act" style="background:var(--blue)">ECO: OFF</button>
     <button class="btn-act btn-mic" id="micBtn" onclick="toggleMic()">🎤 GRAVAR ÁUDIO</button>
 </div>
 
@@ -74,7 +58,7 @@
     let mediaRecorder = null;
     let activeNodes = {};
 
-    // Padrão Real de Piano (Grupos de 2 e 3)
+    // Padrão Real 2 e 3
     const notes = [
         {r: 1, n: 'Dó'}, {r: 1.059, n: 'Dó#', b:true},
         {r: 1.122, n: 'Ré'}, {r: 1.189, n: 'Ré#', b:true},
@@ -97,65 +81,62 @@
 
     notes.filter(n => !n.b).forEach(n => {
         const div = document.createElement('div');
-        div.className = 'key';
-        div.innerHTML = `<span>${n.n}</span>`;
-        div.onmousedown = div.ontouchstart = (e) => { e.preventDefault(); start(n.r, div); };
-        div.onmouseup = div.onmouseleave = div.ontouchend = () => stop(n.r, div);
-        piano.appendChild(div);
-        whiteKeys.push(div);
+        div.className = 'key'; div.innerHTML = `<span>${n.n}</span>`;
+        div.ontouchstart = (e) => { e.preventDefault(); start(n.r, div); };
+        div.ontouchend = () => stop(n.r, div);
+        piano.appendChild(div); whiteKeys.push(div);
     });
 
     let wIdx = 0;
     notes.forEach((n) => {
         if(n.b) {
             const bKey = document.createElement('div');
-            bKey.className = 'black-key';
-            bKey.innerHTML = n.n;
+            bKey.className = 'black-key'; bKey.innerHTML = n.n;
             const ref = whiteKeys[wIdx];
             bKey.style.left = (ref.offsetLeft + ref.offsetWidth) + "px";
-            bKey.onmousedown = bKey.ontouchstart = (e) => { e.preventDefault(); e.stopPropagation(); start(n.r, bKey); };
-            bKey.onmouseup = bKey.onmouseleave = bKey.ontouchend = () => stop(n.r, bKey);
-            piano.appendChild(bKey);
-            wIdx++;
-        } else {
-            if(n.n !== 'Mi' && n.n !== 'Si') wIdx; else wIdx++;
-        }
+            bKey.ontouchstart = (e) => { e.preventDefault(); e.stopPropagation(); start(n.r, bKey); };
+            bKey.ontouchend = () => stop(n.r, bKey);
+            piano.appendChild(bKey); wIdx++;
+        } else { if(n.n !== 'Mi' && n.n !== 'Si') wIdx; else wIdx++; }
     });
 
     function start(ratio, el) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
         el.classList.add('active');
         
-        // Ajuste de Tom mantendo a velocidade
-        const pitchVal = document.getElementById('pitch').value;
-        const pitchShift = Math.pow(2, pitchVal / 12);
+        const pitchVal = parseInt(document.getElementById('pitch').value);
         const vol = document.getElementById('vol').value;
-
         const g = audioCtx.createGain();
         g.gain.setValueAtTime(0, audioCtx.currentTime);
         g.gain.linearRampToValueAtTime(vol, audioCtx.currentTime + 0.05);
 
-        let src;
         if(!recordedBuffer) {
-            src = audioCtx.createOscillator();
-            src.type = 'sawtooth';
-            src.frequency.value = 261.63 * ratio * pitchShift;
+            const osc = audioCtx.createOscillator();
+            osc.type = 'sawtooth';
+            osc.frequency.value = 261.63 * ratio * Math.pow(2, pitchVal/12);
+            osc.connect(g).connect(masterGain);
+            osc.start();
+            activeNodes[ratio] = { src: osc, g };
         } else {
-            src = audioCtx.createBufferSource();
+            const src = audioCtx.createBufferSource();
             src.buffer = recordedBuffer;
-            // Aqui corrigimos a velocidade: a base é o ratio, o pitchVal ajusta o tom
-            src.playbackRate.value = ratio * pitchShift; 
-            src.loop = true;
             
-            // LOGICA DE SOBREPOSIÇÃO: Começa a repetir 0.2s antes de acabar o buffer
-            const overlap = 0.2; 
-            src.loopStart = Math.max(0, recordedBuffer.duration - 1.0);
-            src.loopEnd = recordedBuffer.duration;
-        }
+            // VELOCIDADE TRAVADA: A velocidade de reprodução é sempre 1.0 (original)
+            src.playbackRate.value = 1.0; 
+            
+            // PITCH INDEPENDENTE: Usamos o detune para mudar a nota sem correr com o áudio
+            const semitones = (Math.log2(ratio) * 12) + pitchVal;
+            src.detune.value = semitones * 100;
+            
+            src.loop = true;
+            // LOOP SEM GAP: Ajuste milimétrico para sobrepor o início ao fim
+            src.loopStart = 0.1; 
+            src.loopEnd = recordedBuffer.duration - 0.1;
 
-        src.connect(g).connect(masterGain);
-        src.start();
-        activeNodes[ratio] = { src, g };
+            src.connect(g).connect(masterGain);
+            src.start();
+            activeNodes[ratio] = { src, g };
+        }
     }
 
     function stop(ratio, el) {
@@ -187,10 +168,7 @@
             isRecording = true;
             btn.className = "btn-act btn-mic recording";
             btn.innerText = "GRAVANDO...";
-        } else {
-            mediaRecorder.stop();
-            isRecording = false;
-        }
+        } else { mediaRecorder.stop(); isRecording = false; }
     }
 </script>
 </body>
