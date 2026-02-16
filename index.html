@@ -3,167 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape">
-    <title>Digital Piano - Estúdio Profissional</title>
+    <title>Digital Piano - Sustain Esticado</title>
     <style>
-        :root { --bg: #000; --green: #32CD32; --blue: #1E90FF; --purple: #9370DB; --pink: #FF1493; --orange: #FF8C00; }
+        :root { --bg: #000; --green: #32CD32; --blue: #1E90FF; --pink: #FF1493; --orange: #FF8C00; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: white; font-family: 'Arial Narrow', sans-serif; margin: 0; overflow: hidden; height: 100vh; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; overflow: hidden; height: 100vh; }
 
-        /* Top Bar */
-        .header { display: flex; align-items: center; justify-content: space-between; padding: 10px; background: #000; height: 60px; }
-        .btn-exit { background: #FF4500; color: white; border: none; padding: 5px 15px; border-radius: 20px; font-weight: bold; font-size: 12px; }
-        .mode-status { color: var(--green); font-weight: bold; font-size: 14px; letter-spacing: 1px; }
-        .rec-indicator { background: #333; border: 1px solid #666; padding: 5px 10px; border-radius: 15px; font-size: 10px; display: flex; align-items: center; gap: 5px; }
-        .rec-dot { width: 10px; height: 10px; background: #00BFFF; border-radius: 50%; box-shadow: 0 0 5px #00BFFF; }
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 5px 15px; height: 50px; }
+        .btn-sair { background: var(--orange); border: none; color: white; padding: 5px 20px; border-radius: 20px; font-weight: bold; }
+        
+        .sliders { display: flex; gap: 15px; padding: 0 15px; }
+        .slider-item { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: bold; }
+        input[type="range"] { flex: 1; accent-color: var(--green); height: 10px; background: #333; border-radius: 5px; appearance: none; }
 
-        /* Sliders */
-        .controls-row { display: flex; gap: 20px; padding: 0 15px; align-items: center; height: 40px; }
-        .slider-box { flex: 1; display: flex; align-items: center; gap: 10px; font-size: 12px; font-weight: bold; }
-        input[type="range"] { flex: 1; height: 10px; accent-color: var(--green); background: #333; border-radius: 5px; appearance: none; }
-
-        /* Action Buttons */
-        .actions-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; padding: 10px 15px; }
-        .action-btn { height: 45px; border: none; border-radius: 25px; color: white; font-weight: bold; font-size: 14px; text-transform: uppercase; cursor: pointer; }
-        .btn-eco { background: var(--blue); }
-        .btn-usb { background: var(--purple); }
+        .buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 10px; }
+        .btn-act { height: 50px; border: none; border-radius: 25px; color: white; font-weight: bold; font-size: 13px; }
         .btn-mic { background: var(--pink); }
-        .instrument-select { grid-column: span 3; background: var(--orange); border-radius: 25px; height: 35px; border: none; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-mic.recording { background: #fff; color: red; animation: blink 1s infinite; }
+        .btn-mic.ready { background: var(--green); color: #000; }
 
-        /* Keyboard */
-        .keyboard-container { position: relative; display: flex; height: calc(100vh - 200px); background: #000; padding: 2px; overflow-x: auto; }
-        .key { flex: 1; min-width: 60px; background: #081a08; border: 1px solid #111; position: relative; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px; color: #aaa; font-size: 10px; }
-        .key.active { background: #1a4d1a; box-shadow: inset 0 0 20px var(--green); color: white; }
-        .black-key { position: absolute; background: #111; width: 36px; height: 60%; left: 42px; z-index: 10; border: 1px solid #222; border-radius: 0 0 3px 3px; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px; font-size: 9px; }
-        .black-key.active { background: #333; box-shadow: inset 0 0 15px var(--green); }
+        @keyframes blink { 50% { opacity: 0.5; } }
+
+        .keyboard { display: flex; height: calc(100vh - 210px); padding: 5px; background: #000; position: relative; gap: 2px; }
+        .key { flex: 1; background: linear-gradient(#111, #000); border: 1px solid #222; border-radius: 0 0 5px 5px; position: relative; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 15px; color: #555; }
+        .key.active { background: var(--green) !important; color: #000 !important; box-shadow: 0 0 30px var(--green); }
+        .black-key { position: absolute; background: #000; width: 34px; height: 60%; left: 70%; z-index: 5; border: 1px solid #333; border-radius: 0 0 5px 5px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <button class="btn-exit" onclick="location.reload()">SAIR</button>
-    <div class="mode-status">MODO LIVRE</div>
-    <div class="rec-indicator" id="rec-status"><div class="rec-dot"></div> REC</div>
+    <button class="btn-sair" onclick="location.reload()">SAIR</button>
+    <div style="color: var(--green); font-weight: bold;">SUSTAIN: ESTICAR VOZ</div>
+    <div style="color: #00BFFF;">● REC</div>
 </div>
 
-<div class="controls-row">
-    <div class="slider-box">PITCH: <input type="range" id="pitch-slider" min="0.5" max="2.0" step="0.01" value="1.0"></div>
-    <div class="slider-box">VOL: <input type="range" id="vol-slider" min="0" max="1" step="0.1" value="0.8"></div>
+<div class="sliders">
+    <div class="slider-item">PITCH: <input type="range" id="pitch" min="0.5" max="2.0" step="0.01" value="1.0"></div>
+    <div class="slider-item">VOL: <input type="range" id="vol" min="0" max="4" step="0.1" value="2.0"></div>
 </div>
 
-<div class="actions-row">
-    <button class="action-btn btn-eco" id="eco-btn" onclick="toggleEffect('eco')">ECO: OFF</button>
-    <button class="action-btn btn-usb" id="usb-btn">USB: OFF</button>
-    <button class="action-btn btn-mic" id="mic-btn" onclick="startVoiceRecording()">MIC: OFF</button>
-    <div class="instrument-select">🎸 SYNTH</div>
+<div class="buttons">
+    <button class="btn-act" style="background:var(--blue)">ECO: OFF</button>
+    <button class="btn-act" style="background:var(--purple)">USB: OFF</button>
+    <button class="btn-act btn-mic" id="micBtn" onclick="controleGravar()">🎤 GRAVAR (DOOOOCE)</button>
 </div>
 
-<div class="keyboard-container" id="piano"></div>
+<div class="keyboard" id="piano"></div>
 
 <script>
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const masterGain = audioCtx.createGain();
-    const delay = audioCtx.createDelay();
-    const feedback = audioCtx.createGain();
-
     masterGain.connect(audioCtx.destination);
-    
-    // Config de Eco (igual ao print)
-    delay.delayTime.value = 0.3;
-    feedback.gain.value = 0.4;
-    delay.connect(feedback);
-    feedback.connect(delay);
 
     let recordedBuffer = null;
-    let isEcoOn = false;
+    let isRecording = false;
+    let mediaRecorder = null;
+    let activeNodes = {};
 
-    function toggleEffect(type) {
-        if(type === 'eco') {
-            isEcoOn = !isEcoOn;
-            document.getElementById('eco-btn').innerText = `ECO: ${isEcoOn ? 'ON' : 'OFF'}`;
-        }
-    }
-
-    const notes = [
-        {f: 261.63, n: 'Dó'}, {f: 277.18, n: 'Dó#', b:true},
-        {f: 293.66, n: 'Ré'}, {f: 311.13, n: 'Ré#', b:true},
-        {f: 329.63, n: 'Mi'}, 
-        {f: 349.23, n: 'Fá'}, {f: 369.99, n: 'Fá#', b:true},
-        {f: 392.00, n: 'Sol'}, {f: 415.30, n: 'Sol#', b:true},
-        {f: 440.00, n: 'Lá'}, {f: 466.16, n: 'Lá#', b:true},
-        {f: 493.88, n: 'Si'},
-        {f: 523.25, n: 'Dó2'}, {f: 554.37, n: 'Ré#2', b:true}
+    const notas = [
+        {f: 261.63, n: 'C'}, {f: 277.18, n: 'C#', b:true},
+        {f: 293.66, n: 'D'}, {f: 311.13, n: 'D#', b:true},
+        {f: 329.63, n: 'E'},
+        {f: 349.23, n: 'F'}, {f: 369.99, n: 'F#', b:true},
+        {f: 392.00, n: 'G'}, {f: 415.30, n: 'G#', b:true},
+        {f: 440.00, n: 'A'}, {f: 466.16, n: 'A#', b:true},
+        {f: 493.88, n: 'B'}
     ];
 
     const piano = document.getElementById('piano');
-    notes.forEach((note, i) => {
-        if(note.b) return; // Pula pretas para tratar dentro das brancas
-
+    notas.forEach((nota, i) => {
+        if(nota.b) return;
         const key = document.createElement('div');
         key.className = 'key';
-        key.innerHTML = `<span>${note.n}</span>`;
+        key.innerHTML = `<span>${nota.n}</span>`;
         
-        // Verifica se tem tecla preta à frente
-        if(notes[i+1] && notes[i+1].b) {
+        if(notas[i+1] && notas[i+1].b) {
             const bKey = document.createElement('div');
             bKey.className = 'black-key';
-            bKey.innerHTML = `<span>${notes[i+1].n}</span>`;
-            bKey.onmousedown = () => play(notes[i+1].f, bKey);
+            bKey.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); iniciarSom(notas[i+1].f, bKey); });
+            bKey.addEventListener('touchend', () => pararSom(bKey));
             key.appendChild(bKey);
         }
 
-        key.onmousedown = () => play(note.f, key);
+        key.addEventListener('touchstart', (e) => { e.preventDefault(); iniciarSom(nota.f, key); });
+        key.addEventListener('touchend', () => pararSom(key));
         piano.appendChild(key);
     });
 
-    function play(freq, element) {
-        audioCtx.resume();
-        const pitch = document.getElementById('pitch-slider').value;
-        const volume = document.getElementById('vol-slider').value;
-        
-        element.classList.add('active');
-        setTimeout(() => element.classList.remove('active'), 300);
+    function iniciarSom(freq, elemento) {
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+        const pitchVal = document.getElementById('pitch').value;
+        const volVal = document.getElementById('vol').value;
 
+        elemento.classList.add('active');
+
+        const gainNode = audioCtx.createGain();
+        gainNode.gain.setValueAtTime(volVal, audioCtx.currentTime);
+
+        let source;
         if(!recordedBuffer) {
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            osc.frequency.value = freq * pitch;
-            g.gain.value = volume;
-            osc.connect(g);
-            g.connect(isEcoOn ? delay : masterGain);
-            if(isEcoOn) delay.connect(masterGain);
-            osc.start(); osc.stop(audioCtx.currentTime + 0.5);
+            source = audioCtx.createOscillator();
+            source.type = 'sawtooth';
+            source.frequency.value = freq * pitchVal;
         } else {
-            const src = audioCtx.createBufferSource();
-            const g = audioCtx.createGain();
-            src.buffer = recordedBuffer;
-            src.playbackRate.value = (freq / 261.63) * pitch;
-            g.gain.value = volume;
-            src.connect(g);
-            g.connect(isEcoOn ? delay : masterGain);
-            if(isEcoOn) delay.connect(masterGain);
-            src.start();
+            source = audioCtx.createBufferSource();
+            source.buffer = recordedBuffer;
+            source.playbackRate.value = (freq / 261.63) * pitchVal;
+            
+            // Lógica do Sustain: Loopa apenas o finalzinho (últimos 20%)
+            const duracao = recordedBuffer.duration;
+            source.loop = true;
+            source.loopStart = duracao * 0.8; 
+            source.loopEnd = duracao;
+        }
+
+        source.connect(gainNode);
+        gainNode.connect(masterGain);
+        source.start();
+
+        activeNodes[freq] = { source, gainNode, startTime: audioCtx.currentTime };
+    }
+
+    function pararSom(elemento) {
+        elemento.classList.remove('active');
+        const agora = audioCtx.currentTime;
+
+        for (let f in activeNodes) {
+            const node = activeNodes[f];
+            // Garante o tempo mínimo de 0.3s antes de desligar
+            const tempoDecorrido = agora - node.startTime;
+            const atraso = Math.max(0, 0.3 - tempoDecorrido);
+
+            node.gainNode.gain.setTargetAtTime(0, agora + atraso, 0.05);
+            node.source.stop(agora + atraso + 0.2);
+            delete activeNodes[f];
         }
     }
 
-    async function startVoiceRecording() {
-        const btn = document.getElementById('mic-btn');
-        btn.innerText = "GRAVANDO...";
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const rec = new MediaRecorder(stream);
-        let chunks = [];
-        rec.ondataavailable = e => chunks.push(e.data);
-        rec.onstop = async () => {
-            const b = new Blob(chunks);
-            audioCtx.decodeAudioData(await b.arrayBuffer(), buf => {
-                recordedBuffer = buf;
-                btn.innerText = "MIC: VOICE ON";
-                btn.style.background = "#32CD32";
-            });
-        };
-        rec.start();
-        setTimeout(() => rec.stop(), 2000); // Grava 2 segundos
+    async function controleGravar() {
+        const btn = document.getElementById('micBtn');
+        if (!isRecording) {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            let chunks = [];
+            mediaRecorder.ondataavailable = e => chunks.push(e.data);
+            mediaRecorder.onstop = async () => {
+                const audioData = await (new Blob(chunks)).arrayBuffer();
+                audioCtx.decodeAudioData(audioData, b => { 
+                    recordedBuffer = b; 
+                    btn.className = "btn-act btn-mic ready"; 
+                    btn.innerText = "DOOOOCE PRONTO!"; 
+                });
+            };
+            mediaRecorder.start();
+            isRecording = true;
+            btn.className = "btn-act btn-mic recording";
+            btn.innerText = "GRAVANDO...";
+        } else {
+            mediaRecorder.stop();
+            isRecording = false;
+        }
     }
 </script>
 </body>
-    </html>
-    
+</html>
