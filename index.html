@@ -3,53 +3,59 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape">
-    <title>Digital Piano - Sustain Esticado</title>
+    <title>Digital Piano PRO - 2 Oitavas</title>
     <style>
         :root { --bg: #000; --green: #32CD32; --blue: #1E90FF; --pink: #FF1493; --orange: #FF8C00; }
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; overflow: hidden; height: 100vh; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; overflow: hidden; height: 100vh; user-select: none; }
 
-        .header { display: flex; align-items: center; justify-content: space-between; padding: 5px 15px; height: 50px; }
-        .btn-sair { background: var(--orange); border: none; color: white; padding: 5px 20px; border-radius: 20px; font-weight: bold; }
+        .header { display: flex; align-items: center; justify-content: space-between; padding: 5px 15px; height: 45px; }
+        .btn-sair { background: var(--orange); border: none; color: white; padding: 5px 20px; border-radius: 20px; font-weight: bold; font-size: 11px; }
         
         .sliders { display: flex; gap: 15px; padding: 0 15px; }
-        .slider-item { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: bold; }
+        .slider-item { flex: 1; display: flex; align-items: center; gap: 8px; font-size: 10px; font-weight: bold; }
         input[type="range"] { flex: 1; accent-color: var(--green); height: 10px; background: #333; border-radius: 5px; appearance: none; }
 
-        .buttons { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; padding: 10px; }
-        .btn-act { height: 50px; border: none; border-radius: 25px; color: white; font-weight: bold; font-size: 13px; }
+        .buttons { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 8px; }
+        .btn-act { height: 48px; border: none; border-radius: 25px; color: white; font-weight: bold; font-size: 12px; text-transform: uppercase; }
         .btn-mic { background: var(--pink); }
-        .btn-mic.recording { background: #fff; color: red; animation: blink 1s infinite; }
+        .btn-mic.recording { background: #fff; color: red; animation: blink 0.8s infinite; }
         .btn-mic.ready { background: var(--green); color: #000; }
 
-        @keyframes blink { 50% { opacity: 0.5; } }
+        @keyframes blink { 50% { opacity: 0.4; } }
 
-        .keyboard { display: flex; height: calc(100vh - 210px); padding: 5px; background: #000; position: relative; gap: 2px; }
-        .key { flex: 1; background: linear-gradient(#111, #000); border: 1px solid #222; border-radius: 0 0 5px 5px; position: relative; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 15px; color: #555; }
-        .key.active { background: var(--green) !important; color: #000 !important; box-shadow: 0 0 30px var(--green); }
-        .black-key { position: absolute; background: #000; width: 34px; height: 60%; left: 70%; z-index: 5; border: 1px solid #333; border-radius: 0 0 5px 5px; }
+        /* Teclado com Scroll para 2 Oitavas */
+        .keyboard-wrapper { width: 100%; overflow-x: auto; height: calc(100vh - 190px); background: #000; -webkit-overflow-scrolling: touch; }
+        .keyboard { display: flex; min-width: 150%; height: 100%; padding: 5px; position: relative; gap: 2px; }
+        
+        .key { flex: 1; min-width: 50px; background: linear-gradient(to bottom, #111, #000); border: 1px solid #222; border-radius: 0 0 6px 6px; position: relative; display: flex; align-items: flex-end; justify-content: center; padding-bottom: 10px; color: #444; font-size: 10px; font-weight: bold; }
+        .key.active { background: var(--green) !important; color: #000 !important; box-shadow: 0 0 35px var(--green); border: none; }
+        
+        .black-key { position: absolute; background: #000; width: 30px; height: 60%; left: 70%; z-index: 10; border: 1px solid #333; border-radius: 0 0 4px 4px; }
+        .black-key.active { background: #444 !important; box-shadow: 0 0 20px var(--green); }
     </style>
 </head>
 <body>
 
 <div class="header">
     <button class="btn-sair" onclick="location.reload()">SAIR</button>
-    <div style="color: var(--green); font-weight: bold;">SUSTAIN: ESTICAR VOZ</div>
-    <div style="color: #00BFFF;">● REC</div>
+    <div style="color: var(--green); font-weight: bold; font-size: 12px;">2 OITAVAS • SUSTAIN ON</div>
+    <div style="color: #00BFFF; font-size: 10px;">● MASTER</div>
 </div>
 
 <div class="sliders">
     <div class="slider-item">PITCH: <input type="range" id="pitch" min="0.5" max="2.0" step="0.01" value="1.0"></div>
-    <div class="slider-item">VOL: <input type="range" id="vol" min="0" max="4" step="0.1" value="2.0"></div>
+    <div class="slider-item">VOL: <input type="range" id="vol" min="0" max="5" step="0.1" value="2.5"></div>
 </div>
 
 <div class="buttons">
     <button class="btn-act" style="background:var(--blue)">ECO: OFF</button>
-    <button class="btn-act" style="background:var(--purple)">USB: OFF</button>
-    <button class="btn-act btn-mic" id="micBtn" onclick="controleGravar()">🎤 GRAVAR (DOOOOCE)</button>
+    <button class="btn-act btn-mic" id="micBtn" onclick="toggleMic()">🎤 GRAVAR VOZ</button>
 </div>
 
-<div class="keyboard" id="piano"></div>
+<div class="keyboard-wrapper">
+    <div class="keyboard" id="piano"></div>
+</div>
 
 <script>
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -61,99 +67,86 @@
     let mediaRecorder = null;
     let activeNodes = {};
 
-    const notas = [
-        {f: 261.63, n: 'C'}, {f: 277.18, n: 'C#', b:true},
-        {f: 293.66, n: 'D'}, {f: 311.13, n: 'D#', b:true},
-        {f: 329.63, n: 'E'},
-        {f: 349.23, n: 'F'}, {f: 369.99, n: 'F#', b:true},
-        {f: 392.00, n: 'G'}, {f: 415.30, n: 'G#', b:true},
-        {f: 440.00, n: 'A'}, {f: 466.16, n: 'A#', b:true},
-        {f: 493.88, n: 'B'}
+    // 2 Oitavas Completas (C3 até B4)
+    const notes = [
+        {f: 130.81, n: 'C1'}, {f: 138.59, n: 'C#1', b:true}, {f: 146.83, n: 'D1'}, {f: 155.56, n: 'D#1', b:true}, {f: 164.81, n: 'E1'}, {f: 174.61, n: 'F1'}, {f: 185.00, n: 'F#1', b:true}, {f: 196.00, n: 'G1'}, {f: 207.65, n: 'G#1', b:true}, {f: 220.00, n: 'A1'}, {f: 233.08, n: 'A#1', b:true}, {f: 246.94, n: 'B1'},
+        {f: 261.63, n: 'C2'}, {f: 277.18, n: 'C#2', b:true}, {f: 293.66, n: 'D2'}, {f: 311.13, n: 'D#2', b:true}, {f: 329.63, n: 'E2'}, {f: 349.23, n: 'F2'}, {f: 369.99, n: 'F#2', b:true}, {f: 392.00, n: 'G2'}, {f: 415.30, n: 'G#2', b:true}, {f: 440.00, n: 'A2'}, {f: 466.16, n: 'A#2', b:true}, {f: 493.88, n: 'B2'}
     ];
 
     const piano = document.getElementById('piano');
-    notas.forEach((nota, i) => {
+    notes.forEach((nota, i) => {
         if(nota.b) return;
         const key = document.createElement('div');
         key.className = 'key';
         key.innerHTML = `<span>${nota.n}</span>`;
         
-        if(notas[i+1] && notas[i+1].b) {
+        if(notes[i+1] && notes[i+1].b) {
             const bKey = document.createElement('div');
             bKey.className = 'black-key';
-            bKey.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); iniciarSom(notas[i+1].f, bKey); });
-            bKey.addEventListener('touchend', () => pararSom(bKey));
+            bKey.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); start(notes[i+1].f, bKey); });
+            bKey.addEventListener('touchend', () => stop(notes[i+1].f, bKey));
             key.appendChild(bKey);
         }
 
-        key.addEventListener('touchstart', (e) => { e.preventDefault(); iniciarSom(nota.f, key); });
-        key.addEventListener('touchend', () => pararSom(key));
+        key.addEventListener('touchstart', (e) => { e.preventDefault(); start(nota.f, key); });
+        key.addEventListener('touchend', () => stop(nota.f, key));
         piano.appendChild(key);
     });
 
-    function iniciarSom(freq, elemento) {
+    function start(freq, el) {
         if (audioCtx.state === 'suspended') audioCtx.resume();
+        el.classList.add('active');
         const pitchVal = document.getElementById('pitch').value;
         const volVal = document.getElementById('vol').value;
 
-        elemento.classList.add('active');
+        const g = audioCtx.createGain();
+        g.gain.setValueAtTime(volVal, audioCtx.currentTime);
 
-        const gainNode = audioCtx.createGain();
-        gainNode.gain.setValueAtTime(volVal, audioCtx.currentTime);
-
-        let source;
+        let src;
         if(!recordedBuffer) {
-            source = audioCtx.createOscillator();
-            source.type = 'sawtooth';
-            source.frequency.value = freq * pitchVal;
+            src = audioCtx.createOscillator();
+            src.type = 'sawtooth';
+            src.frequency.value = freq * pitchVal;
         } else {
-            source = audioCtx.createBufferSource();
-            source.buffer = recordedBuffer;
-            source.playbackRate.value = (freq / 261.63) * pitchVal;
-            
-            // Lógica do Sustain: Loopa apenas o finalzinho (últimos 20%)
-            const duracao = recordedBuffer.duration;
-            source.loop = true;
-            source.loopStart = duracao * 0.8; 
-            source.loopEnd = duracao;
+            src = audioCtx.createBufferSource();
+            src.buffer = recordedBuffer;
+            src.playbackRate.value = (freq / 261.63) * pitchVal;
+            src.loop = true;
+            src.loopStart = recordedBuffer.duration * 0.8;
+            src.loopEnd = recordedBuffer.duration;
         }
 
-        source.connect(gainNode);
-        gainNode.connect(masterGain);
-        source.start();
-
-        activeNodes[freq] = { source, gainNode, startTime: audioCtx.currentTime };
+        src.connect(g);
+        g.connect(masterGain);
+        src.start();
+        activeNodes[freq] = { src, g, startTime: audioCtx.currentTime };
     }
 
-    function pararSom(elemento) {
-        elemento.classList.remove('active');
-        const agora = audioCtx.currentTime;
-
-        for (let f in activeNodes) {
-            const node = activeNodes[f];
-            // Garante o tempo mínimo de 0.3s antes de desligar
-            const tempoDecorrido = agora - node.startTime;
-            const atraso = Math.max(0, 0.3 - tempoDecorrido);
-
-            node.gainNode.gain.setTargetAtTime(0, agora + atraso, 0.05);
-            node.source.stop(agora + atraso + 0.2);
-            delete activeNodes[f];
+    function stop(freq, el) {
+        el.classList.remove('active');
+        const node = activeNodes[freq];
+        if (node) {
+            const elapsed = audioCtx.currentTime - node.startTime;
+            const release = Math.max(0, 0.3 - elapsed); 
+            node.g.gain.setTargetAtTime(0, audioCtx.currentTime + release, 0.05);
+            node.src.stop(audioCtx.currentTime + release + 0.1);
+            delete activeNodes[freq];
         }
     }
 
-    async function controleGravar() {
+    async function toggleMic() {
         const btn = document.getElementById('micBtn');
         if (!isRecording) {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            mediaRecorder = new MediaRecorder(stream);
-            let chunks = [];
-            mediaRecorder.ondataavailable = e => chunks.push(e.data);
+            const s = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(s);
+            let ch = [];
+            mediaRecorder.ondataavailable = e => ch.push(e.data);
             mediaRecorder.onstop = async () => {
-                const audioData = await (new Blob(chunks)).arrayBuffer();
-                audioCtx.decodeAudioData(audioData, b => { 
-                    recordedBuffer = b; 
-                    btn.className = "btn-act btn-mic ready"; 
-                    btn.innerText = "DOOOOCE PRONTO!"; 
+                const b = await (new Blob(ch)).arrayBuffer();
+                audioCtx.decodeAudioData(b, buf => { 
+                    recordedBuffer = buf; 
+                    btn.className = "btn-act btn-mic ready";
+                    btn.innerText = "VOZ CARREGADA!";
                 });
             };
             mediaRecorder.start();
