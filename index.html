@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #121212; color: white; margin: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+        body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: white; margin: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
         
         /* --- UI: Menu e Tutorial --- */
         #sideMenu { height: 100%; width: 0; position: fixed; z-index: 20; top: 0; left: 0; background-color: #111; overflow-x: hidden; transition: 0.5s; padding-top: 60px; box-shadow: 2px 0 15px black; }
@@ -17,21 +17,21 @@
         #tutorialOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 100; display: flex; justify-content: center; align-items: center; }
         .tutorial-box { background: #1e1e1e; padding: 40px; border-radius: 20px; border: 2px solid #4CAF50; max-width: 500px; text-align: center; box-shadow: 0 0 30px rgba(76, 175, 80, 0.3); }
 
-        /* --- UI: Principal --- */
+        /* --- Interface --- */
         .header { width: 100%; padding: 15px; display: flex; justify-content: space-between; align-items: center; background: #1a1a1a; border-bottom: 2px solid #333; }
-        canvas { border: 3px solid #4CAF50; border-radius: 12px; margin-top: 10px; max-width: 95vw; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        canvas { border: 3px solid #4CAF50; border-radius: 12px; margin-top: 10px; max-width: 95vw; background-color: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
         
         .controls { margin-top: 15px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; align-items: center; padding-bottom: 20px; }
         .slider-container { background: #252525; padding: 12px 20px; border-radius: 10px; display: flex; align-items: center; gap: 15px; border: 1px solid #444; }
         
-        button { padding: 12px 24px; font-weight: bold; cursor: pointer; border: none; border-radius: 8px; background-color: #4CAF50; color: white; transition: scale 0.2s; }
-        button:hover { scale: 1.05; background-color: #45a049; }
+        button { padding: 12px 24px; font-weight: bold; cursor: pointer; border: none; border-radius: 8px; background-color: #4CAF50; color: white; transition: 0.2s; }
+        button:hover { background-color: #45a049; transform: scale(1.02); }
         #btnAdjust { background-color: #2196F3; }
-        #btnAdjust.active { background-color: #ff9800; animation: pulse 1.5s infinite; }
+        #btnAdjust.active { background-color: #ff9800; animation: blink 1.5s infinite; }
         #btnStopRecord { background-color: #f44336; display: none; }
         video { display: none; }
 
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
@@ -42,9 +42,9 @@
 
     <div id="sideMenu">
         <a href="javascript:void(0)" onclick="toggleMenu(0)" style="font-size:30px; position: absolute; right: 20px; top: 10px;">&times;</a>
-        <p style="color: #4CAF50; padding: 0 32px; font-weight: bold; margin-top: 20px;">CONFIGURAÇÕES</p>
+        <p style="color: #4CAF50; padding: 0 32px; font-weight: bold; margin-top: 20px;">AJUSTES</p>
         <a onclick="startTutorial()">📖 Ver Tutorial</a>
-        <a onclick="location.reload()">🔄 Reiniciar Calibração</a>
+        <a onclick="location.reload()">🔄 Reiniciar</a>
     </div>
 
     <div class="header">
@@ -78,7 +78,7 @@
         const noteSlider = document.getElementById('noteSlider');
         const noteDisplay = document.getElementById('noteDisplay');
 
-        // --- GERAÇÃO DE 3 OITAVAS (C2 A C5) ---
+        // --- BANCO DE NOTAS (3 OITAVAS) ---
         const allWhiteNotes = [];
         const noteNames = ["Dó", "Ré", "Mi", "Fá", "Sol", "Lá", "Si"];
         const baseFreqs = [130.81, 146.83, 164.81, 174.61, 196.00, 220.00, 246.94];
@@ -95,37 +95,44 @@
         let isAdjusting = false;
         let isDragging = false;
         let currentOffset = 7; 
-        const GAP = 8; // Espaço para desenhar
-        const BLACK_PATTERN = [true, true, false, true, true, true, false]; // Padrão de sustenidos
+        const GAP = 10;
+        const BLACK_PATTERN = [true, true, false, true, true, true, false];
 
-        // --- TUTORIAL ---
-        let step = 0;
+        // --- SISTEMA DE TUTORIAL ---
+        let stepIdx = 0;
         const tutorial = [
-            { t: "Bem-vindo ao Piano Pro!", c: "Desenhe 7 teclas brancas grandes num papel para começar." },
-            { t: "Seletor de Notas", c: "Use o controle deslizante abaixo para escolher quais notas quer tocar hoje." },
-            { t: "Ajuste e Arraste", c: "Clique em 'Ajustar Posição' e arraste as teclas virtuais para cima do seu desenho." },
-            { t: "Regra dos 40%", c: "O som só sai quando o dedo passa da linha amarela. Toque no meio das pretas para precisão!" }
+            { t: "Bem-vindo!", c: "Desenhe 7 teclas no papel. Use o botão azul para alinhar o piano virtual com o seu desenho." },
+            { t: "Mover Notas", c: "Use o controle deslizante para escolher quais notas quer tocar nas 7 teclas." },
+            { t: "Toque de 40%", c: "Abaixe o dedo indicador até passar da linha amarela para o som sair." },
+            { t: "Sem Conflitos", c: "As teclas pretas têm prioridade total. Se tocar nelas, as brancas embaixo não tocam!" }
         ];
+
         function updateTutorial() {
-            const s = tutorial[step];
+            const s = tutorial[stepIdx];
             document.getElementById('tutorialContent').innerHTML = `
                 <h2 style="color:#4CAF50">${s.t}</h2>
                 <p style="font-size:18px; line-height:1.6">${s.c}</p>
                 <div style="margin-top:30px">
-                    <button class="btn-nav" onclick="closeTutorial()" style="background:#555">Pular</button>
-                    ${step < tutorial.length - 1 ? `<button onclick="nextStep()" style="margin-left:10px">Próximo</button>` : `<button onclick="closeTutorial()" style="margin-left:10px">Começar!</button>`}
+                    <button onclick="closeTutorial()" style="background:#555">Pular</button>
+                    ${stepIdx < tutorial.length - 1 ? `<button onclick="nextStep()" style="margin-left:10px">Próximo</button>` : `<button onclick="closeTutorial()" style="margin-left:10px">Começar!</button>`}
                 </div>`;
         }
-        function nextStep() { step++; updateTutorial(); }
+        function nextStep() { stepIdx++; updateTutorial(); }
         function closeTutorial() { document.getElementById('tutorialOverlay').style.display = 'none'; }
-        function startTutorial() { step = 0; document.getElementById('tutorialOverlay').style.display = 'flex'; toggleMenu(0); updateTutorial(); }
+        function startTutorial() { stepIdx = 0; document.getElementById('tutorialOverlay').style.display = 'flex'; toggleMenu(0); updateTutorial(); }
         updateTutorial();
 
-        // --- LÓGICA DE MOVIMENTO ---
+        // --- LÓGICA DE CONTROLES ---
         noteSlider.oninput = () => {
             currentOffset = parseInt(noteSlider.value);
             noteDisplay.innerText = `Piano: ${allWhiteNotes[currentOffset].name} a ${allWhiteNotes[currentOffset+6].name}`;
         };
+
+        document.getElementById('btnAdjust').onclick = () => {
+            isAdjusting = !isAdjusting;
+            document.getElementById('btnAdjust').classList.toggle('active');
+        };
+
         canvas.onmousedown = () => { if(isAdjusting) isDragging = true; };
         window.onmouseup = () => isDragging = false;
         canvas.onmousemove = (e) => {
@@ -135,19 +142,15 @@
                 pianoPos.y += e.movementY * (canvas.height / rect.height);
             }
         };
-        document.getElementById('btnAdjust').onclick = () => {
-            isAdjusting = !isAdjusting;
-            document.getElementById('btnAdjust').classList.toggle('active');
-        };
 
-        // --- ÁUDIO (SUSTAIN + FADE) ---
+        // --- ÁUDIO ---
         let audioCtx, activeNotes = {}, currentId = null;
 
         function playNote(id, freq) {
             if (!audioCtx || activeNotes[id]) return;
             const osc = audioCtx.createOscillator();
             const g = audioCtx.createGain();
-            osc.type = 'triangle'; // Som mais encorpado
+            osc.type = 'triangle';
             osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
             g.gain.setValueAtTime(0, audioCtx.currentTime);
             g.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.05);
@@ -158,47 +161,49 @@
         function stopNote(id) {
             if (!activeNotes[id]) return;
             const { osc, g } = activeNotes[id];
-            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
-            osc.stop(audioCtx.currentTime + 0.4);
+            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+            osc.stop(audioCtx.currentTime + 0.3);
             delete activeNotes[id];
         }
 
-        // --- IA E DETECÇÃO ---
+        // --- IA E PROCESSAMENTO ---
         const hands = new Hands({locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
         hands.setOptions({ maxNumHands: 1, minDetectionConfidence: 0.8 });
 
-        hands.onResults((res) => {
+        function onResults(results) {
             ctx.save();
             ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Desenha Câmera Espelhada ao Fundo
             ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
-            ctx.drawImage(res.image, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+            ctx.restore();
 
-            const kw_full = 110; 
+            const kw_full = 110;
             const kw = kw_full - GAP;
             const kh = 230;
             let tid = null, tfreq = 0;
 
-            if (res.multiHandLandmarks && res.multiHandLandmarks.length > 0) {
-                const tip = res.multiHandLandmarks[0][8];
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const tip = results.multiHandLandmarks[0][8];
                 const fx = (1 - tip.x) * canvas.width;
                 const fy = tip.y * canvas.height;
 
-                // 1. PRIORIDADE: TECLAS PRETAS (EVITA BUG DAS LATERAIS)
+                // 1. PRIORIDADE: TECLAS PRETAS (Transparentes)
                 for(let i=0; i<6; i++) {
-                    const patternIdx = (currentOffset + i) % 7;
-                    if(BLACK_PATTERN[patternIdx]) {
+                    if(BLACK_PATTERN[(currentOffset + i) % 7]) {
                         const bx = pianoPos.x + (i * kw_full) + (kw_full * 0.65);
-                        const bw = kw_full * 0.7; // Área de toque da preta
+                        const bw = kw_full * 0.7; 
                         const bh = kh * 0.6;
-                        if(fx > bx && fx < bx + bw && fy > pianoPos.y + (bh * 0.4) && fy < pianoPos.y + bh) {
-                            tfreq = allWhiteNotes[currentOffset + i].freq * 1.05946; // Freq sustenido
+                        if(fx > bx && fx < bx + bw && fy > pianoPos.y + (bh * 0.2) && fy < pianoPos.y + bh) {
+                            tfreq = allWhiteNotes[currentOffset + i].freq * 1.05946;
                             tid = "b"+i;
-                            break; // Se detectou preta, ignora o resto
+                            break; 
                         }
                     }
                 }
 
-                // 2. TECLAS BRANCAS (SÓ SE NÃO TOCOU PRETA)
+                // 2. TECLAS BRANCAS (Transparentes)
                 if(!tid) {
                     for(let i=0; i<7; i++) {
                         const wx = pianoPos.x + (i * kw_full);
@@ -209,7 +214,6 @@
                         }
                     }
                 }
-                drawLandmarks(ctx, res.multiHandLandmarks[0], {color: '#00FF00', lineWidth: 1});
             }
 
             if(tid !== currentId) {
@@ -217,64 +221,55 @@
                 if(tid) playNote(tid, tfreq);
                 currentId = tid;
             }
-            ctx.restore();
 
-            // --- DESENHO DAS TECLAS ---
+            // --- DESENHO VISUAL ---
             if(isAdjusting) { 
-                ctx.strokeStyle="#2196F3"; ctx.lineWidth=4; ctx.setLineDash([10, 5]);
-                ctx.strokeRect(pianoPos.x-10, pianoPos.y-10, (7*kw_full)+10, kh+20);
+                ctx.strokeStyle="#2196F3"; ctx.lineWidth=3; ctx.setLineDash([10, 5]);
+                ctx.strokeRect(pianoPos.x-5, pianoPos.y-5, (7*kw_full)+5, kh+10);
                 ctx.setLineDash([]);
             }
 
-            // Brancas
             for(let i=0; i<7; i++) {
                 const x = pianoPos.x + (i * kw_full);
-                ctx.fillStyle = (currentId === "w"+i) ? "rgba(76, 175, 80, 0.5)" : "rgba(255,255,255,0.2)";
+                ctx.fillStyle = (currentId === "w"+i) ? "rgba(76, 175, 80, 0.6)" : "rgba(255,255,255,0.2)";
                 ctx.fillRect(x, pianoPos.y, kw, kh);
-                ctx.strokeStyle = "white"; ctx.strokeRect(x, pianoPos.y, kw, kh);
-                // Linha dos 40% (Guia visual)
-                ctx.fillStyle = "rgba(255, 255, 0, 0.8)";
-                ctx.fillRect(x, pianoPos.y + (kh * 0.4), kw, 3);
+                ctx.strokeStyle = "rgba(255,255,255,0.8)"; ctx.strokeRect(x, pianoPos.y, kw, kh);
+                ctx.fillStyle = "rgba(255, 255, 0, 0.9)"; ctx.fillRect(x, pianoPos.y + (kh * 0.4), kw, 3);
             }
-            // Pretas
+
             for(let i=0; i<6; i++) {
                 if(BLACK_PATTERN[(currentOffset + i) % 7]) {
                     const bx = pianoPos.x + (i * kw_full) + (kw_full * 0.65);
-                    ctx.fillStyle = (currentId === "b"+i) ? "#00FF00" : "#000";
+                    ctx.fillStyle = (currentId === "b"+i) ? "rgba(0, 255, 0, 0.7)" : "rgba(0,0,0,0.7)";
                     ctx.fillRect(bx, pianoPos.y, kw_full * 0.7, kh * 0.6);
                     ctx.strokeStyle = "white"; ctx.strokeRect(bx, pianoPos.y, kw_full * 0.7, kh * 0.6);
                 }
             }
-        });
+        }
 
-        // --- CONTROLES GERAIS ---
+        hands.onResults(onResults);
+
+        // --- BOTÃO START COM PERMISSÃO FORÇADA ---
+        document.getElementById('btnStart').onclick = async () => {
+            try {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                video.srcObject = stream;
+                
+                const cam = new Camera(video, {
+                    onFrame: async () => { await hands.send({image: video}); },
+                    width: 1000, height: 550
+                });
+                cam.start();
+                document.getElementById('btnStart').style.display = 'none';
+                document.getElementById('btnPhoto').disabled = false;
+                document.getElementById('btnRecord').disabled = false;
+            } catch (err) {
+                alert("Permissão de câmera negada ou erro técnico.");
+            }
+        };
+
         function toggleMenu(w) { document.getElementById("sideMenu").style.width = w + "px"; }
-        document.getElementById('btnStart').onclick = () => {
-            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            new Camera(video, { onFrame: async () => { await hands.send({image: video}); }, width: 1000, height: 550 }).start();
-            document.getElementById('btnStart').style.display = 'none';
-            document.getElementById('btnPhoto').disabled = document.getElementById('btnRecord').disabled = false;
-        };
-
-        document.getElementById('btnPhoto').onclick = () => {
-            const a = document.createElement('a'); a.download = 'meu_piano.png';
-            a.href = canvas.toDataURL(); a.click();
-        };
-
-        let chunks = [], rec;
-        document.getElementById('btnRecord').onclick = () => {
-            rec = new MediaRecorder(canvas.captureStream());
-            rec.ondataavailable = e => chunks.push(e.data);
-            rec.onstop = () => {
-                const b = new Blob(chunks, {type: 'video/webm'});
-                const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = 'piano_show.webm'; a.click();
-                chunks = [];
-            };
-            rec.start();
-            document.getElementById('btnRecord').style.display = 'none';
-            document.getElementById('btnStopRecord').style.display = 'block';
-        };
-        document.getElementById('btnStopRecord').onclick = () => { rec.stop(); document.getElementById('btnRecord').style.display = 'block'; document.getElementById('btnStopRecord').style.display = 'none'; };
     </script>
 </body>
     </html>
