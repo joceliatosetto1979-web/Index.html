@@ -2,275 +2,387 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Piano AR Pro v7 - Final</title>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <title>Piano Virtual BR</title>
+    
+    <link rel="apple-touch-icon" href="https://googleusercontent.com/image_generation_content/4">
+    <link rel="icon" href="https://googleusercontent.com/image_generation_content/4">
+
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background-color: #121212; color: white; margin: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+        body, html { width: 100vw; height: 100vh; overflow: hidden; background: #000; font-family: sans-serif; display: flex; flex-direction: column; }
         
-        /* --- UI: Menu e Tutorial --- */
-        #sideMenu { height: 100%; width: 0; position: fixed; z-index: 20; top: 0; left: 0; background-color: #111; overflow-x: hidden; transition: 0.5s; padding-top: 60px; box-shadow: 2px 0 15px black; }
-        #sideMenu a { padding: 10px 32px; text-decoration: none; font-size: 18px; color: #818181; display: block; cursor: pointer; transition: 0.3s; }
-        #sideMenu a:hover { color: #4CAF50; background: #222; }
-        
-        #tutorialOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.92); z-index: 100; display: flex; justify-content: center; align-items: center; }
-        .tutorial-box { background: #1e1e1e; padding: 40px; border-radius: 20px; border: 2px solid #4CAF50; max-width: 500px; text-align: center; box-shadow: 0 0 30px rgba(76, 175, 80, 0.3); }
+        .tela { position: absolute; width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 10; padding: 20px; }
+        .ativa { display: flex; }
 
-        /* --- Interface --- */
-        .header { width: 100%; padding: 15px; display: flex; justify-content: space-between; align-items: center; background: #1a1a1a; border-bottom: 2px solid #333; }
-        canvas { border: 3px solid #4CAF50; border-radius: 12px; margin-top: 10px; max-width: 95vw; background-color: #000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        
-        .controls { margin-top: 15px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; align-items: center; padding-bottom: 20px; }
-        .slider-container { background: #252525; padding: 12px 20px; border-radius: 10px; display: flex; align-items: center; gap: 15px; border: 1px solid #444; }
-        
-        button { padding: 12px 24px; font-weight: bold; cursor: pointer; border: none; border-radius: 8px; background-color: #4CAF50; color: white; transition: 0.2s; }
-        button:hover { background-color: #45a049; transform: scale(1.02); }
-        #btnAdjust { background-color: #2196F3; }
-        #btnAdjust.active { background-color: #ff9800; animation: blink 1.5s infinite; }
-        #btnStopRecord { background-color: #f44336; display: none; }
-        video { display: none; }
+        #m-p { 
+            background-image: url('https://googleusercontent.com/image_generation_content/3'); 
+            background-size: cover; 
+            background-position: center;
+            position: relative;
+        }
+        #m-p::before {
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.5); z-index: 1;
+        }
+        #m-p * { z-index: 2; }
 
-        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
+        #painel { height: 38%; width: 100%; background: #111; display: flex; flex-direction: column; justify-content: space-around; padding: 10px; border-bottom: 2px solid #00ff0033; position: relative; }
+        
+        .oitava-1 { background: rgba(144, 238, 144, 0.1) !important; border: 1px solid rgba(144, 238, 144, 0.2) !important; }
+        .oitava-2 { background: rgba(0, 100, 0, 0.15) !important; border: 1px solid rgba(0, 100, 0, 0.3) !important; }
+        
+        #teclado { height: 62%; width: 100%; display: flex; overflow-x: auto; touch-action: none; background: #000; padding-top: 10px; gap: 2px; }
+        .tecla { flex-shrink: 0; position: relative; border-radius: 0 0 8px 8px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 15px; user-select: none; transition: all 0.1s; cursor: pointer; overflow: hidden; }
+        .branca { width: 65px; height: 100%; color: #fff; z-index: 1; border: 1px solid #333; }
+        .preta { width: 40px; height: 60%; background: #000; color: #fff; margin-left: -20px; margin-right: -20px; z-index: 2; border: 1px solid #444; }
+        
+        .tecla-ativa-branca { background: #00ff00 !important; transform: translateY(5px); box-shadow: 0 0 30px #00ff00, inset 0 0 10px #fff; }
+        .tecla-ativa-preta { background: #008000 !important; transform: translateY(5px); box-shadow: 0 0 25px #008000; }
+        .alvo-amarelo { border: 3px solid #ffff00 !important; box-shadow: 0 0 20px #ffff00 !important; animation: pulsar 0.8s infinite alternate; }
+        @keyframes pulsar { from { opacity: 0.7; } to { opacity: 1; border-width: 5px; } }
+
+        .progresso-nota { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(255, 255, 0, 0.7); height: 0%; z-index: 0; pointer-events: none; }
+        #container-progresso { width: 100%; height: 6px; background: #333; border-radius: 3px; overflow: hidden; display: none; }
+        #barra-progresso { width: 0%; height: 100%; background: #00ff00; transition: width .3s; }
+        
+        .linha { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px; color: white; font-size: 0.7rem; }
+        input[type=range] { flex: 1; accent-color: #00ff00; }
+        
+        .btn { padding: 12px 20px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; color: #fff; font-size: 0.75rem; transition: 0.2s; text-transform: uppercase; text-align: center; }
+        .btn-menu { width: 260px; margin: 10px; border: 2px solid rgba(255,255,255,0.2); }
+        #folha { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 20; display: none; flex-direction: column; }
+        #txt-folha { flex: 1; padding: 15px; border: none; resize: none; font-size: 1rem; outline: none; }
+        
+        select.btn { appearance: none; -webkit-appearance: none; text-align-last: center; outline: none; }
     </style>
 </head>
 <body>
 
-    <div id="tutorialOverlay">
-        <div class="tutorial-box" id="tutorialContent"></div>
-    </div>
+<div id="m-p" class="tela ativa">
+    <h1 style="color:#00ff00; text-shadow: 0 0 15px #00ff00; margin-bottom:30px; font-size: 2rem; text-align: center;">PIANO VIRTUAL BR</h1>
+    <button class="btn btn-menu" style="background:rgba(0, 255, 0, 0.3); border-color: #00ff00;" onclick="ligarTudo(); irJogo();">MODO LIVRE</button>
+    <button class="btn btn-menu" style="background:rgba(33, 150, 243, 0.3); border-color: #2196F3;" onclick="irMus()">MÚSICAS COMPLETAS</button>
+    <button class="btn btn-menu" style="background:rgba(255, 152, 0, 0.3); border-color: #FF9800;" onclick="irSalvas()">GRAVAÇÕES</button>
+</div>
 
-    <div id="sideMenu">
-        <a href="javascript:void(0)" onclick="toggleMenu(0)" style="font-size:30px; position: absolute; right: 20px; top: 10px;">&times;</a>
-        <p style="color: #4CAF50; padding: 0 32px; font-weight: bold; margin-top: 20px;">AJUSTES</p>
-        <a onclick="startTutorial()">📖 Ver Tutorial</a>
-        <a onclick="location.reload()">🔄 Reiniciar</a>
-    </div>
+<div id="t-m" class="tela" style="background: #111;">
+    <button class="btn" style="background:#444; margin-bottom:20px; width: 100%" onclick="irMenu()">⬅ VOLTAR</button>
+    <div id="lista-m" style="width:100%"></div>
+</div>
 
-    <div class="header">
-        <button onclick="toggleMenu(250)">☰ Menu</button>
-        <h3 id="noteDisplay" style="margin: 0; color: #4CAF50;">Piano: Sol a Fá</h3>
-        <div style="width: 80px;"></div>
-    </div>
-
-    <canvas id="canvasElement" width="1000" height="550"></canvas>
-
-    <div class="controls">
-        <button id="btnStart">🎹 Ligar Sistema</button>
-        
-        <div class="slider-container">
-            <span>Mover Oitavas:</span>
-            <input type="range" id="noteSlider" min="0" max="15" value="7">
+<div id="t-j" class="tela" style="padding:0; background: #000;">
+    <div id="painel">
+        <div id="folha">
+            <div style="display:flex; justify-content:space-between; background:#eee; padding:5px;"><b style="color:#000">RASCUNHO</b><button class="btn" style="background:red; padding: 5px 10px;" onclick="document.getElementById('folha').style.display='none'">X</button></div>
+            <textarea id="txt-folha" oninput="localStorage.setItem('piano_txt', this.value)"></textarea>
         </div>
-
-        <button id="btnAdjust">🎯 Ajustar Posição</button>
-        <button id="btnPhoto" disabled>📸 Foto</button>
-        <button id="btnRecord" disabled>🎥 Gravar</button>
-        <button id="btnStopRecord">⏹️ Parar</button>
+        <div id="container-progresso"><div id="barra-progresso"></div></div>
+        <div class="linha">
+            <button class="btn" style="background:#f44336; padding: 5px 10px;" onclick="irMenu()">SAIR</button>
+            <b id="txt-m" style="color:#00ff00">LIVRE</b>
+            <button class="btn" style="background:#fff; color:#000; padding: 5px 10px;" onclick="document.getElementById('folha').style.display='flex'">📝 FOLHA</button>
+            <button id="btn-rec" class="btn" style="background:#555; padding: 5px 10px;" onclick="toggleRec()">⏺ REC</button>
+        </div>
+        <div class="linha">
+            <span>PITCH:</span><input type="range" id="pitch" min="0.5" max="2.0" step="0.1" value="1.0">
+            <span>VOL:</span><input type="range" id="vol" min="0" max="1" step="0.1" value="0.6">
+            <select id="timbre" class="btn" style="background:#ff9800; color:#fff; padding: 5px 10px; flex: 1.5;">
+                <option value="piano">🎹 PIANO</option>
+                <option value="flauta">🥖 FLAUTA</option>
+                <option value="violino">🎻 VIOLINO</option>
+                <option value="violao">🎸 VIOLÃO</option>
+                <option value="harpa">🪕 HARPA</option>
+                <option value="sino">🔔 SINO</option>
+                <option value="synth">🎸 SYNTH</option>
+                <option value="8bit">👾 8-BIT</option>
+            </select>
+        </div>
+        <div class="linha">
+            <button class="btn" style="background:#2196F3; flex:1" onclick="ecoAtivo=!ecoAtivo; this.innerText=ecoAtivo?'ECO: ON':'ECO: OFF'">ECO: ON</button>
+            <button id="btn-usb" class="btn" style="background:#673AB7; flex:1" onclick="ativarUSB()">USB: OFF</button>
+            <button id="btn-mic" class="btn" style="background:#E91E63; flex:1" onclick="ativarMic()">MIC: OFF</button>
+        </div>
     </div>
+    <div id="teclado"></div>
+</div>
 
-    <video id="videoElement" autoplay playsinline></video>
+<div id="t-s" class="tela" style="background: #111;">
+    <button class="btn" style="background:#444; margin-bottom:20px; width: 100%" onclick="irMenu()">⬅ VOLTAR</button>
+    <div id="lista-salvas" style="width:100%"></div>
+</div>
 
-    <script>
-        const canvas = document.getElementById('canvasElement');
-        const ctx = canvas.getContext('2d');
-        const video = document.getElementById('videoElement');
-        const noteSlider = document.getElementById('noteSlider');
-        const noteDisplay = document.getElementById('noteDisplay');
+<script>
+let ctx, mG, recorder, micStream, micAnalyser, micReqFrame;
+let notasAtivas = new Map();
+let mus = null;
+let passo = 0;
+let segurando = false;
+let ecoAtivo = true;
+let gravando = false;
+let usbAtivo = false;
+let midiAccess = null;
+let notaAtualMic = -1;
+let chunks = [];
 
-        // --- BANCO DE NOTAS (3 OITAVAS) ---
-        const allWhiteNotes = [];
-        const noteNames = ["Dó", "Ré", "Mi", "Fá", "Sol", "Lá", "Si"];
-        const baseFreqs = [130.81, 146.83, 164.81, 174.61, 196.00, 220.00, 246.94];
+let listaS = JSON.parse(localStorage.getItem('p_v12') || '[]');
+const nms = ['Dó','Dó#','Ré','Ré#','Mi','Fá','Fá#','Sol','Sol#','Lá','Lá#','Si','Dó2','Dó#2','Ré2','Ré#2','Mi2','Fá2','Fá#2','Sol2','Sol#2','Lá2','Lá#2','Si2','Dó3'];
+
+const banco = [
+    { id: 1, nome: "Bate o Sino", seq: [[4,400],[4,400],[4,800],[-1,100],[4,400],[4,400],[4,800],[-1,100],[4,400],[7,400],[0,400],[2,400],[4,1200],[-1,200],[5,400],[5,400],[5,400],[5,400],[5,400],[4,400],[4,400],[4,200],[4,200],[4,400],[2,400],[2,400],[4,400],[2,800],[-1,400],[4,400],[4,400],[4,800],[-1,100],[4,400],[4,400],[4,800],[-1,100],[4,400],[7,400],[0,400],[2,400],[4,1200],[-1,200],[5,400],[5,400],[5,400],[5,400],[5,400],[4,400],[4,400],[4,200],[4,200],[7,400],[7,400],[5,400],[2,400],[0,1200]] },
+    { id: 2, nome: "Ode à Alegria", seq: [[4,400],[4,400],[5,400],[7,400],[7,400],[5,400],[4,400],[2,400],[0,400],[0,400],[2,400],[4,400],[4,600],[2,200],[2,800],[-1,200],[4,400],[4,400],[5,400],[7,400],[7,400],[5,400],[4,400],[2,400],[0,400],[0,400],[2,400],[4,400],[2,600],[0,200],[0,800],[-1,300],[2,400],[2,400],[4,400],[0,400],[2,400],[4,200],[5,200],[4,400],[0,400],[2,400],[4,200],[5,200],[4,400],[2,400],[0,400],[2,400],[7,800],[-1,300],[4,400],[4,400],[5,400],[7,400],[7,400],[5,400],[4,400],[2,400],[0,400],[0,400],[2,400],[4,400],[2,600],[0,200],[0,800]] },
+    { id: 3, nome: "Brilha Brilha", seq: [[0,400],[0,400],[7,400],[7,400],[9,400],[9,400],[7,800],[-1,200],[5,400],[5,400],[4,400],[4,400],[2,400],[2,400],[0,800],[-1,200],[7,400],[7,400],[5,400],[5,400],[4,400],[4,400],[2,800],[-1,200],[7,400],[7,400],[5,400],[5,400],[4,400],[4,400],[2,800],[-1,200],[0,400],[0,400],[7,400],[7,400],[9,400],[9,400],[7,800],[-1,200],[5,400],[5,400],[4,400],[4,400],[2,400],[2,400],[0,800]] },
+    { id: 4, nome: "Parabéns", seq: [[0,300],[0,150],[2,450],[0,450],[5,450],[4,900],[-1,300],[0,300],[0,150],[2,450],[0,450],[7,450],[5,900],[-1,300],[0,300],[0,150],[12,450],[9,450],[5,450],[4,450],[2,900],[-1,300],[10,300],[10,150],[9,450],[5,450],[7,450],[5,900]] }
+];
+
+async function ligarTudo() {
+    if (!ctx) {
+        ctx = new (window.AudioContext || window.webkitAudioContext)();
+        mG = ctx.createGain(); 
+        mG.connect(ctx.destination);
         
-        for(let oct=0; oct<3; oct++) {
-            noteNames.forEach((name, i) => {
-                allWhiteNotes.push({ name: name, freq: baseFreqs[i] * Math.pow(2, oct) });
-            });
-        }
-        allWhiteNotes.push({ name: "Dó", freq: 1046.50 });
-
-        // --- ESTADO ---
-        let pianoPos = { x: 100, y: 280 };
-        let isAdjusting = false;
-        let isDragging = false;
-        let currentOffset = 7; 
-        const GAP = 10;
-        const BLACK_PATTERN = [true, true, false, true, true, true, false];
-
-        // --- SISTEMA DE TUTORIAL ---
-        let stepIdx = 0;
-        const tutorial = [
-            { t: "Bem-vindo!", c: "Desenhe 7 teclas no papel. Use o botão azul para alinhar o piano virtual com o seu desenho." },
-            { t: "Mover Notas", c: "Use o controle deslizante para escolher quais notas quer tocar nas 7 teclas." },
-            { t: "Toque de 40%", c: "Abaixe o dedo indicador até passar da linha amarela para o som sair." },
-            { t: "Sem Conflitos", c: "As teclas pretas têm prioridade total. Se tocar nelas, as brancas embaixo não tocam!" }
-        ];
-
-        function updateTutorial() {
-            const s = tutorial[stepIdx];
-            document.getElementById('tutorialContent').innerHTML = `
-                <h2 style="color:#4CAF50">${s.t}</h2>
-                <p style="font-size:18px; line-height:1.6">${s.c}</p>
-                <div style="margin-top:30px">
-                    <button onclick="closeTutorial()" style="background:#555">Pular</button>
-                    ${stepIdx < tutorial.length - 1 ? `<button onclick="nextStep()" style="margin-left:10px">Próximo</button>` : `<button onclick="closeTutorial()" style="margin-left:10px">Começar!</button>`}
-                </div>`;
-        }
-        function nextStep() { stepIdx++; updateTutorial(); }
-        function closeTutorial() { document.getElementById('tutorialOverlay').style.display = 'none'; }
-        function startTutorial() { stepIdx = 0; document.getElementById('tutorialOverlay').style.display = 'flex'; toggleMenu(0); updateTutorial(); }
-        updateTutorial();
-
-        // --- LÓGICA DE CONTROLES ---
-        noteSlider.oninput = () => {
-            currentOffset = parseInt(noteSlider.value);
-            noteDisplay.innerText = `Piano: ${allWhiteNotes[currentOffset].name} a ${allWhiteNotes[currentOffset+6].name}`;
+        let dest = ctx.createMediaStreamDestination(); 
+        mG.connect(dest);
+        
+        recorder = new MediaRecorder(dest.stream);
+        recorder.ondataavailable = e => chunks.push(e.data);
+        recorder.onstop = () => {
+            let n = prompt("Nome da gravação:");
+            if(n) { 
+                listaS.push({ nome: n, url: URL.createObjectURL(new Blob(chunks, {type:'audio/mp3'})) }); 
+                localStorage.setItem('p_v12', JSON.stringify(listaS)); 
+            }
+            chunks = [];
         };
+        document.getElementById('txt-folha').value = localStorage.getItem('piano_txt') || '';
+    }
+    if (ctx.state === 'suspended') ctx.resume();
+}
 
-        document.getElementById('btnAdjust').onclick = () => {
-            isAdjusting = !isAdjusting;
-            document.getElementById('btnAdjust').classList.toggle('active');
-        };
-
-        canvas.onmousedown = () => { if(isAdjusting) isDragging = true; };
-        window.onmouseup = () => isDragging = false;
-        canvas.onmousemove = (e) => {
-            if(isDragging && isAdjusting) {
-                const rect = canvas.getBoundingClientRect();
-                pianoPos.x += e.movementX * (canvas.width / rect.width);
-                pianoPos.y += e.movementY * (canvas.height / rect.height);
-            }
-        };
-
-        // --- ÁUDIO ---
-        let audioCtx, activeNotes = {}, currentId = null;
-
-        function playNote(id, freq) {
-            if (!audioCtx || activeNotes[id]) return;
-            const osc = audioCtx.createOscillator();
-            const g = audioCtx.createGain();
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            g.gain.setValueAtTime(0, audioCtx.currentTime);
-            g.gain.linearRampToValueAtTime(0.5, audioCtx.currentTime + 0.05);
-            osc.connect(g); g.connect(audioCtx.destination);
-            osc.start(); activeNotes[id] = { osc, g };
-        }
-
-        function stopNote(id) {
-            if (!activeNotes[id]) return;
-            const { osc, g } = activeNotes[id];
-            g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
-            osc.stop(audioCtx.currentTime + 0.3);
-            delete activeNotes[id];
-        }
-
-        // --- IA E PROCESSAMENTO ---
-        const hands = new Hands({locateFile: (f) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${f}`});
-        hands.setOptions({ maxNumHands: 1, minDetectionConfidence: 0.8 });
-
-        function onResults(results) {
-            ctx.save();
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Desenha Câmera Espelhada ao Fundo
-            ctx.translate(canvas.width, 0); ctx.scale(-1, 1);
-            ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
-            ctx.restore();
-
-            const kw_full = 110;
-            const kw = kw_full - GAP;
-            const kh = 230;
-            let tid = null, tfreq = 0;
-
-            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                const tip = results.multiHandLandmarks[0][8];
-                const fx = (1 - tip.x) * canvas.width;
-                const fy = tip.y * canvas.height;
-
-                // 1. PRIORIDADE: TECLAS PRETAS (Transparentes)
-                for(let i=0; i<6; i++) {
-                    if(BLACK_PATTERN[(currentOffset + i) % 7]) {
-                        const bx = pianoPos.x + (i * kw_full) + (kw_full * 0.65);
-                        const bw = kw_full * 0.7; 
-                        const bh = kh * 0.6;
-                        if(fx > bx && fx < bx + bw && fy > pianoPos.y + (bh * 0.2) && fy < pianoPos.y + bh) {
-                            tfreq = allWhiteNotes[currentOffset + i].freq * 1.05946;
-                            tid = "b"+i;
-                            break; 
-                        }
-                    }
-                }
-
-                // 2. TECLAS BRANCAS (Transparentes)
-                if(!tid) {
-                    for(let i=0; i<7; i++) {
-                        const wx = pianoPos.x + (i * kw_full);
-                        if(fx > wx && fx < wx + kw && fy > pianoPos.y + (kh * 0.4) && fy < pianoPos.y + kh) {
-                            tfreq = allWhiteNotes[currentOffset + i].freq;
-                            tid = "w"+i;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            if(tid !== currentId) {
-                if(currentId) stopNote(currentId);
-                if(tid) playNote(tid, tfreq);
-                currentId = tid;
-            }
-
-            // --- DESENHO VISUAL ---
-            if(isAdjusting) { 
-                ctx.strokeStyle="#2196F3"; ctx.lineWidth=3; ctx.setLineDash([10, 5]);
-                ctx.strokeRect(pianoPos.x-5, pianoPos.y-5, (7*kw_full)+5, kh+10);
-                ctx.setLineDash([]);
-            }
-
-            for(let i=0; i<7; i++) {
-                const x = pianoPos.x + (i * kw_full);
-                ctx.fillStyle = (currentId === "w"+i) ? "rgba(76, 175, 80, 0.6)" : "rgba(255,255,255,0.2)";
-                ctx.fillRect(x, pianoPos.y, kw, kh);
-                ctx.strokeStyle = "rgba(255,255,255,0.8)"; ctx.strokeRect(x, pianoPos.y, kw, kh);
-                ctx.fillStyle = "rgba(255, 255, 0, 0.9)"; ctx.fillRect(x, pianoPos.y + (kh * 0.4), kw, 3);
-            }
-
-            for(let i=0; i<6; i++) {
-                if(BLACK_PATTERN[(currentOffset + i) % 7]) {
-                    const bx = pianoPos.x + (i * kw_full) + (kw_full * 0.65);
-                    ctx.fillStyle = (currentId === "b"+i) ? "rgba(0, 255, 0, 0.7)" : "rgba(0,0,0,0.7)";
-                    ctx.fillRect(bx, pianoPos.y, kw_full * 0.7, kh * 0.6);
-                    ctx.strokeStyle = "white"; ctx.strokeRect(bx, pianoPos.y, kw_full * 0.7, kh * 0.6);
-                }
-            }
-        }
-
-        hands.onResults(onResults);
-
-        // --- BOTÃO START COM PERMISSÃO FORÇADA ---
-        document.getElementById('btnStart').onclick = async () => {
-            try {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-                video.srcObject = stream;
-                
-                const cam = new Camera(video, {
-                    onFrame: async () => { await hands.send({image: video}); },
-                    width: 1000, height: 550
-                });
-                cam.start();
-                document.getElementById('btnStart').style.display = 'none';
-                document.getElementById('btnPhoto').disabled = false;
-                document.getElementById('btnRecord').disabled = false;
-            } catch (err) {
-                alert("Permissão de câmera negada ou erro técnico.");
-            }
-        };
-
-        function toggleMenu(w) { document.getElementById("sideMenu").style.width = w + "px"; }
-    </script>
-</body>
-    </html>
+// NOVA FUNÇÃO DE SOM COM SINTESE REALISTA AVANÇADA
+function som(f, id) {
+    if(!ctx || notasAtivas.has(id)) return;
     
+    let volSlider = document.getElementById('vol').value;
+    let timbre = document.getElementById('timbre').value;
+    let freqReal = f * document.getElementById('pitch').value;
+    let t = ctx.currentTime;
+
+    // Nodo de volume final da nota
+    let g = ctx.createGain();
+    g.connect(mG);
+    
+    // Armazena osciladores e controles para desligar corretamente depois
+    let notaObj = { g: g, oscs: [], rel: 0.5, custom: false };
+    
+    if (timbre === 'flauta') {
+        // Flauta: Onda Senoidal com Vibrato (LFO)
+        let osc = ctx.createOscillator();
+        osc.type = 'sine';
+        osc.frequency.value = freqReal;
+
+        // Vibrato (Oscilador secundário modulando a frequência do primário)
+        let lfo = ctx.createOscillator();
+        lfo.type = 'sine';
+        lfo.frequency.value = 5.5; // Rapidez do vibrato
+        let lfoGain = ctx.createGain();
+        lfoGain.gain.value = freqReal * 0.012; // Intensidade do vibrato
+        
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc.frequency);
+        lfo.start(t);
+        notaObj.oscs.push(lfo);
+
+        osc.connect(g);
+        osc.start(t);
+        notaObj.oscs.push(osc);
+        
+        // Envelope suave da flauta
+        notaObj.rel = 0.4;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(volSlider * 0.8, t + 0.1); // Ataque suave de sopro
+
+    } else if (timbre === 'violino') {
+        // Violino: Onda Serrilhada com Filtro LowPass e Vibrato Expressivo
+        let osc = ctx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.value = freqReal;
+
+        // Filtro para tirar a aspereza digital
+        let filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        filter.frequency.value = freqReal * 3; // Deixa o som mais "quente"
+        
+        // LFO Vibrato (começa devagar, simulando o dedo do violinista)
+        let lfo = ctx.createOscillator();
+        lfo.type = 'sine';
+        lfo.frequency.value = 6.0;
+        let lfoGain = ctx.createGain();
+        lfoGain.gain.setValueAtTime(0, t);
+        lfoGain.gain.linearRampToValueAtTime(freqReal * 0.02, t + 0.3); // Entra depois de 0.3s
+        
+        lfo.connect(lfoGain);
+        lfoGain.connect(osc.frequency);
+        lfo.start(t);
+        notaObj.oscs.push(lfo);
+
+        osc.connect(filter);
+        filter.connect(g);
+        osc.start(t);
+        notaObj.oscs.push(osc);
+
+        // Envelope
+        notaObj.rel = 0.5;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(volSlider * 0.5, t + 0.25); // Ataque de fricção do arco
+
+    } else if (timbre === 'violao' || timbre === 'harpa') {
+        // Cordas Dedilhadas: Filtro que "fecha" rápido para simular o estalo
+        let osc = ctx.createOscillator();
+        osc.type = timbre === 'harpa' ? 'sine' : 'triangle';
+        osc.frequency.value = freqReal;
+
+        let filter = ctx.createBiquadFilter();
+        filter.type = 'lowpass';
+        // Começa com bastante brilho
+        filter.frequency.setValueAtTime(freqReal * (timbre === 'harpa' ? 3 : 6), t);
+        // E perde o brilho super rápido (efeito do dedilhado)
+        filter.frequency.exponentialRampToValueAtTime(freqReal, t + 0.2);
+
+        osc.connect(filter);
+        filter.connect(g);
+        osc.start(t);
+        notaObj.oscs.push(osc);
+
+        // Envelope: Decaimento longo e natural
+        notaObj.rel = 1.5;
+        notaObj.custom = true;
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(volSlider * 0.9, t + 0.01); // Estalo imediato
+        g.gain.exponentialRampToValueAtTime(0.001, t + (timbre === 'harpa' ? 3.0 : 2.0)); // Morre sozinho
+
+    } else {
+        // Instrumentos Simples (Piano, Sino, 8bit, Synth)
+        let osc = ctx.createOscillator();
+        let atk = 0.01, sus = volSlider;
+        
+        if (timbre === 'piano') { osc.type = 'triangle'; sus *= 0.6; notaObj.rel = 1.0; notaObj.custom = true; }
+        else if (timbre === 'sino') { osc.type = 'sine'; sus *= 0.5; notaObj.rel = 1.5; notaObj.custom = true; }
+        else if (timbre === '8bit') { osc.type = 'square'; sus *= 0.2; notaObj.rel = 0.1; }
+        else if (timbre === 'synth') { osc.type = 'sawtooth'; atk = 0.05; sus *= 0.3; notaObj.rel = 0.2; }
+        
+        osc.frequency.value = freqReal;
+        osc.connect(g);
+        osc.start(t);
+        notaObj.oscs.push(osc);
+        
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(sus, t + atk);
+        
+        // Piano e sino também têm decaimento longo natural
+        if (notaObj.custom) {
+            g.gain.exponentialRampToValueAtTime(0.001, t + 2.5);
+        }
+    }
+
+    notasAtivas.set(id, notaObj);
+}
+
+// NOVA FUNÇÃO OFF PARA NÃO CORTAR O SOM SECO
+function off(id) {
+    let n = notasAtivas.get(id);
+    if(n) { 
+        let t = ctx.currentTime;
+        let d = ecoAtivo ? n.rel : 0.05; 
+        
+        n.g.gain.cancelScheduledValues(t); 
+        n.g.gain.setValueAtTime(n.g.gain.value, t); // Pega o volume exato daquele milissegundo
+        
+        // Faz o som apagar suavemente (Fade out)
+        if(n.g.gain.value > 0.01) {
+            n.g.gain.exponentialRampToValueAtTime(0.001, t + d); 
+        } else {
+            n.g.gain.linearRampToValueAtTime(0, t + d);
+        }
+        
+        // Para todos os osciladores (incluindo LFO de vibrato)
+        n.oscs.forEach(osc => osc.stop(t + d + 0.1)); 
+        notasAtivas.delete(id); 
+    }
+}
+
+const tcl = document.getElementById('teclado');
+for(let i = 0; i < 25; i++) {
+    let f = 130.81 * Math.pow(2, i/12); 
+    let id = 'k' + i;
+    let d = document.createElement('div');
+    
+    d.className = `tecla ${i < 12 ? 'oitava-1' : 'oitava-2'} ` + (nms[i%12].includes('#') ? 'preta' : 'branca');
+    d.id = id; 
+    d.innerHTML = `<div class="progresso-nota"></div><small style="pointer-events:none; font-size:9px">${nms[i]}</small>`;
+    
+    d.onpointerdown = e => { d.setPointerCapture(e.pointerId); hStart(id, f); };
+    d.onpointerup = e => hEnd(id); 
+    tcl.appendChild(d);
+}
+
+function hStart(id, f) {
+    ligarTudo(); 
+    som(f, id);
+    let el = document.getElementById(id);
+    if(el) {
+        let notaIndex = parseInt(id.slice(1));
+        el.classList.add(nms[notaIndex % 12].includes('#') ? 'tecla-ativa-preta' : 'tecla-ativa-branca');
+        
+        if(mus && id === 'k' + mus.seq[passo][0]) {
+            segurando = true; 
+            let p = el.querySelector('.progresso-nota');
+            if(p) { 
+                p.style.transition = `height ${mus.seq[passo][1]}ms linear`; 
+                p.style.height = '100%'; 
+            }
+        }
+    }
+}
+
+function hEnd(id) {
+    off(id); 
+    let el = document.getElementById(id);
+    if(el) el.classList.remove('tecla-ativa-preta', 'tecla-ativa-branca');
+    
+    if(mus && segurando && id === 'k' + mus.seq[passo][0]) { 
+        segurando = false; 
+        passo++; 
+        prox(); 
+    }
+}
+
+function irMenu() { fecharTelas(); document.getElementById('m-p').classList.add('ativa'); mus = null; }
+function irJogo() { fecharTelas(); document.getElementById('t-j').classList.add('ativa'); document.getElementById('txt-m').innerText = "MODO LIVRE"; document.getElementById('container-progresso').style.display = 'none'; }
+function irMus() { 
+    fecharTelas(); document.getElementById('t-m').classList.add('ativa');
+    const l = document.getElementById('lista-m'); l.innerHTML = '';
+    banco.forEach(m => { 
+        l.innerHTML += `<div style="background:#222; margin-bottom:10px; padding:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; color:white"><span>${m.nome}</span><div><button class="btn" style="background:#555; margin-right:5px; padding:5px 10px;" onclick="ouvir(${m.id})">OUVIR</button><button class="btn" style="background:#00ff00; color:#000; padding:5px 10px;" onclick="playM(${m.id})">JOGAR</button></div></div>`; 
+    });
+}
+function fecharTelas() { document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa')); }
+
+function playM(id) { 
+    mus = banco.find(m => m.id === id); passo = 0; fecharTelas();
+    document.getElementById('t-j').classList.add('ativa'); document.getElementById('txt-m').innerText = mus.nome; 
+    document.getElementById('container-progresso').style.display = 'block'; prox(); 
+}
+
+function prox() { 
+    document.querySelectorAll('.tecla').forEach(t => { t.classList.remove('alvo-amarelo'); t.querySelector('.progresso-nota').style.height = '0%'; });
+    if(mus) { 
+        document.getElementById('barra-progresso').style.width = (passo / mus.seq.length) * 100 + '%';
+        if(passo >= mus.seq.length) { alert("Música Concluída! 🎉"); irMenu(); return; }
+        if(mus.seq[passo][0] === -1) { setTimeout(() => { passo++; prox(); }, mus.seq[passo][1]); 
+        } else { document.getElementById('k' + mus.seq[passo][0]).classList.add('alvo-amarelo'); } 
+    } 
+}
+
+async function ouvir(id) { 
+    await ligarTudo()
