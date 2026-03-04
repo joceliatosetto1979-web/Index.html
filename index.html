@@ -3,48 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-    <title>Piano Virtual BR - Som Fix</title>
+    <title>Piano Virtual BR</title>
+    
+    <link rel="apple-touch-icon" href="https://googleusercontent.com/image_generation_content/4">
+    <link rel="icon" href="https://googleusercontent.com/image_generation_content/4">
+
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
-        body, html { width: 100vw; height: 100vh; overflow: hidden; background: #000; font-family: sans-serif; display: flex; flex-direction: column; }
+        body, html { width: 100vw; height: 100vh; overflow: hidden; background: #1a1a1a; font-family: sans-serif; display: flex; flex-direction: column; }
         
         .tela { position: absolute; width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 10; padding: 20px; }
         .ativa { display: flex; }
 
-        #m-p { background: radial-gradient(circle, #1a1a1a 0%, #000 100%); }
+        #m-p { 
+            background: linear-gradient(135deg, #111, #222);
+            position: relative;
+        }
 
-        #painel { height: 40%; width: 100%; background: #111; display: flex; flex-direction: column; justify-content: space-around; padding: 10px; border-bottom: 2px solid #00ff0033; }
+        #painel { height: 30%; width: 100%; background: #1a1a1a; display: flex; flex-direction: column; justify-content: space-around; padding: 10px; border-bottom: 4px solid #000; position: relative; box-shadow: 0 5px 15px rgba(0,0,0,0.8); z-index: 5; }
         
-        #teclado { height: 60%; width: 100%; display: flex; overflow-x: auto; touch-action: none; background: #000; padding: 5px; gap: 2px; }
-        .tecla { flex-shrink: 0; position: relative; border-radius: 0 0 8px 8px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 15px; user-select: none; transition: all 0.1s; cursor: pointer; border: 1px solid #333; }
-        .branca { width: 65px; height: 100%; background: #fff; color: #000; z-index: 1; }
-        .preta { width: 42px; height: 60%; background: #000; color: #fff; margin-left: -21px; margin-right: -21px; z-index: 2; border: 1px solid #444; }
+        /* Teclado Maior e com Rolagem */
+        #teclado { 
+            height: 70%; 
+            width: 100%; 
+            display: flex; 
+            overflow-x: auto; 
+            touch-action: pan-x; /* Permite rolar para os lados no celular */
+            background: #0a0a0a; 
+            padding-top: 2px; 
+            padding-bottom: 8px; 
+            gap: 1px; 
+            box-shadow: inset 0 10px 20px rgba(0,0,0,0.8); 
+            scroll-behavior: smooth;
+        }
         
-        .tecla-ativa-branca { background: #00ff00 !important; transform: translateY(5px); box-shadow: 0 0 30px #00ff00; }
-        .tecla-ativa-preta { background: #008000 !important; transform: translateY(5px); box-shadow: 0 0 25px #008000; }
-        .alvo-amarelo { border: 4px solid #ffff00 !important; box-shadow: 0 0 20px #ffff00 !important; animation: pulsar 0.8s infinite alternate; }
-        @keyframes pulsar { from { opacity: 0.7; } to { opacity: 1; } }
+        /* Barra de rolagem estilizada */
+        #teclado::-webkit-scrollbar { height: 12px; }
+        #teclado::-webkit-scrollbar-track { background: #111; border-radius: 6px; }
+        #teclado::-webkit-scrollbar-thumb { background: #444; border-radius: 6px; border: 2px solid #111; }
+        
+        .tecla { flex-shrink: 0; position: relative; border-radius: 0 0 8px 8px; display: flex; justify-content: center; align-items: flex-end; padding-bottom: 15px; user-select: none; transition: transform 0.05s, box-shadow 0.05s; cursor: pointer; }
+        
+        /* Teclas mais largas (Grandes na tela) */
+        .branca { 
+            width: 90px; /* Aumentado */
+            height: 100%; 
+            background: linear-gradient(to bottom, #f9f9f9 0%, #ffffff 100%);
+            border: 1px solid #ccc;
+            border-bottom: 6px solid #bbb;
+            box-shadow: inset 0 0 4px rgba(0,0,0,0.1), 2px 2px 5px rgba(0,0,0,0.3);
+            color: #333; 
+            z-index: 1; 
+        }
+        
+        /* Teclas pretas maiores e mais afastadas (seguindo o centro das brancas) */
+        .preta { 
+            width: 46px; /* Aumentado */
+            height: 60%; 
+            background: linear-gradient(to bottom, #333 0%, #000 100%); 
+            border: 1px solid #000;
+            border-bottom: 6px solid #111;
+            border-radius: 0 0 6px 6px;
+            box-shadow: inset 0 2px 4px rgba(255,255,255,0.2), 2px 4px 6px rgba(0,0,0,0.6);
+            color: #ddd; 
+            margin-left: -23px; /* Exatamente a metade da largura para centralizar no meio das brancas */
+            margin-right: -23px; 
+            z-index: 2; 
+        }
+        
+        .tecla-ativa-branca { 
+            background: linear-gradient(to bottom, #eee 0%, #e0e0e0 100%);
+            border-bottom: 2px solid #999;
+            transform: translateY(4px); 
+            box-shadow: inset 0 0 5px rgba(0,0,0,0.2); 
+        }
+        .tecla-ativa-preta { 
+            background: linear-gradient(to bottom, #111 0%, #000 100%);
+            border-bottom: 2px solid #000;
+            transform: translateY(4px); 
+            box-shadow: inset 0 1px 2px rgba(255,255,255,0.1); 
+        }
 
-        .progresso-nota { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(255, 255, 0, 0.6); height: 0%; z-index: 0; pointer-events: none; }
-        #container-progresso { width: 100%; height: 6px; background: #333; border-radius: 3px; overflow: hidden; display: none; margin-bottom: 5px; }
+        .nome-nota {
+            font-size: 13px;
+            font-weight: bold;
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .alvo-amarelo { border: 2px solid #ffff00 !important; box-shadow: 0 0 15px #ffff00 inset !important; }
+
+        .progresso-nota { position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(255, 255, 0, 0.4); height: 0%; z-index: 0; pointer-events: none; border-radius: inherit; }
+        #container-progresso { width: 100%; height: 6px; background: #333; border-radius: 3px; overflow: hidden; display: none; }
         #barra-progresso { width: 0%; height: 100%; background: #00ff00; transition: width .3s; }
         
-        .linha { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 10px; color: white; font-size: 0.75rem; }
+        .linha { display: flex; justify-content: space-between; align-items: center; width: 100%; gap: 8px; color: white; font-size: 0.7rem; }
         input[type=range] { flex: 1; accent-color: #00ff00; }
         
-        .btn { padding: 10px 15px; border-radius: 50px; border: none; font-weight: 700; cursor: pointer; color: #fff; font-size: 0.7rem; transition: 0.2s; text-transform: uppercase; }
-        .btn-menu { width: 260px; margin: 10px; border: 2px solid rgba(255,255,255,0.2); font-size: 0.8rem; }
+        .btn { padding: 10px 15px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; color: #fff; font-size: 0.75rem; transition: 0.2s; text-transform: uppercase; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.3); }
+        .btn:active { transform: translateY(2px); box-shadow: 0 0px 2px rgba(0,0,0,0.3); }
+        .btn-menu { width: 260px; margin: 10px; border: 1px solid rgba(255,255,255,0.2); font-size: 1rem; padding: 15px; }
         
-        select { background: #ff9800; color: #fff; border: none; padding: 8px; border-radius: 5px; font-weight: bold; flex: 1.5; }
+        #folha { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 20; display: none; flex-direction: column; }
+        #txt-folha { flex: 1; padding: 15px; border: none; resize: none; font-size: 1rem; outline: none; }
+        
+        select.btn { appearance: none; -webkit-appearance: none; text-align-last: center; outline: none; }
     </style>
 </head>
 <body>
 
 <div id="m-p" class="tela ativa">
-    <h1 style="color:#00ff00; text-shadow: 0 0 15px #00ff00; margin-bottom:30px;">PIANO VIRTUAL BR</h1>
-    <button class="btn btn-menu" style="background:rgba(0, 255, 0, 0.3); border-color: #00ff00;" onclick="ligarTudo(); irJogo();">MODO LIVRE</button>
-    <button class="btn btn-menu" style="background:rgba(33, 150, 243, 0.3); border-color: #2196F3;" onclick="irMus()">MÚSICAS COMPLETAS</button>
-    <button class="btn btn-menu" style="background:rgba(255, 152, 0, 0.3); border-color: #FF9800;" onclick="irSalvas()">GRAVAÇÕES</button>
+    <h1 style="color:#fff; text-shadow: 0 0 15px rgba(255,255,255,0.5); margin-bottom:30px; font-size: 2.2rem; text-align: center; letter-spacing: 2px;">PIANO VIRTUAL</h1>
+    <button class="btn btn-menu" style="background:#2ecc71;" onclick="ligarTudo(); irJogo();">MODO LIVRE</button>
+    <button class="btn btn-menu" style="background:#3498db;" onclick="irMus()">APRENDER MÚSICAS</button>
+    <button class="btn btn-menu" style="background:#e67e22;" onclick="irSalvas()">GRAVAÇÕES</button>
 </div>
 
 <div id="t-m" class="tela" style="background: #111;">
@@ -54,25 +126,33 @@
 
 <div id="t-j" class="tela" style="padding:0; background: #000;">
     <div id="painel">
+        <div id="folha">
+            <div style="display:flex; justify-content:space-between; background:#eee; padding:5px;"><b style="color:#000">RASCUNHO</b><button class="btn" style="background:red; padding: 5px 10px;" onclick="document.getElementById('folha').style.display='none'">X</button></div>
+            <textarea id="txt-folha" oninput="localStorage.setItem('piano_txt', this.value)"></textarea>
+        </div>
         <div id="container-progresso"><div id="barra-progresso"></div></div>
         <div class="linha">
-            <button class="btn" style="background:#f44336;" onclick="irMenu()">SAIR</button>
-            <b id="txt-m" style="color:#00ff00">MODO LIVRE</b>
-            <button id="btn-rec" class="btn" style="background:#555;" onclick="toggleRec()">⏺ REC</button>
+            <button class="btn" style="background:#e74c3c; padding: 8px 15px;" onclick="irMenu()">🏠 MENU</button>
+            <b id="txt-m" style="color:#2ecc71; font-size: 1rem;">LIVRE</b>
+            <button class="btn" style="background:#ecf0f1; color:#2c3e50; padding: 8px 15px;" onclick="document.getElementById('folha').style.display='flex'">📝 NOTAS</button>
+            <button id="btn-rec" class="btn" style="background:#95a5a6; padding: 8px 15px;" onclick="toggleRec()">⏺ REC</button>
         </div>
         <div class="linha">
             <span>PITCH:</span><input type="range" id="pitch" min="0.5" max="2.0" step="0.1" value="1.0">
-            <span>VOL:</span><input type="range" id="vol" min="0" max="1" step="0.1" value="0.7">
+            <span>VOL:</span><input type="range" id="vol" min="0" max="1" step="0.1" value="0.8">
+            <select id="timbre" class="btn" style="background:#f39c12; color:#fff; padding: 8px; flex: 1.5;">
+                <option value="piano">🎹 PIANO</option>
+                <option value="violao">🎸 VIOLÃO</option>
+                <option value="violino">🎻 VIOLINO</option>
+                <option value="flauta">🥖 FLAUTA</option>
+                <option value="harpa">🪕 HARPA</option>
+                <option value="sino">🔔 SINO</option>
+                <option value="synth">🎹 SYNTH</option>
+                <option value="8bit">👾 8-BIT</option>
+            </select>
         </div>
         <div class="linha">
-            <select id="timbre">
-                <option value="harpa">🪕 HARPA</option>
-                <option value="piano">🎹 PIANO</option>
-                <option value="flauta">🥖 FLAUTA</option>
-                <option value="violino">🎻 VIOLINO</option>
-                <option value="sino">🔔 SINO</option>
-            </select>
-            <button class="btn" style="background:#2196F3; flex: 1;" onclick="ecoAtivo=!ecoAtivo; this.innerText=ecoAtivo?'ECO: ON':'ECO: OFF'">ECO: ON</button>
+            <button class="btn" style="background:#3498db; flex:1" onclick="ecoAtivo=!ecoAtivo; this.innerText=ecoAtivo?'ECO: ON':'ECO: OFF'">ECO: ON</button>
         </div>
     </div>
     <div id="teclado"></div>
@@ -84,158 +164,65 @@
 </div>
 
 <script>
-let ctx, mG, recorder, chunks = [];
+let ctx, mG, recorder;
 let notasAtivas = new Map();
-let mus = null, passo = 0, segurando = false, ecoAtivo = true, gravando = false;
+let mus = null;
+let passo = 0;
+let segurando = false;
+let ecoAtivo = true;
+let gravando = false;
+let chunks = [];
+
 let listaS = JSON.parse(localStorage.getItem('p_v12') || '[]');
 
-const nms = ['Dó','Dó#','Ré','Ré#','Mi','Fá','Fá#','Sol','Sol#','Lá','Lá#','Si','Dó2','Dó#2','Ré2','Ré#2','Mi2','Fá2','Fá#2','Sol2','Sol#2','Lá2','Lá#2','Si2','Dó3'];
+// Gerando 3 oitavas de notas automaticamente para podermos rolar a tela
+const notasBase = ['Dó','Dó#','Ré','Ré#','Mi','Fá','Fá#','Sol','Sol#','Lá','Lá#','Si'];
+const nms = Array.from({length: 37}, (_, i) => {
+    let oitava = Math.floor(i / 12);
+    return notasBase[i % 12] + (oitava > 0 ? (oitava + 1) : '');
+});
 
 const banco = [
-    { id: 1, nome: "Bate o Sino", seq: [[4,400],[4,400],[4,800],[-1,100],[4,400],[4,400],[4,800],[-1,100],[4,400],[7,400],[0,400],[2,400],[4,1200],[-1,200],[5,400],[5,400],[5,400],[5,400],[5,400],[4,400],[4,400],[4,200],[4,200],[4,400],[2,400],[2,400],[4,400],[2,800],[-1,400],[4,400],[4,400],[4,800],[-1,100],[4,400],[4,400],[4,800],[-1,100],[4,400],[7,400],[0,400],[2,400],[4,1200],[-1,200],[5,400],[5,400],[5,400],[5,400],[5,400],[4,400],[4,400],[4,200],[4,200],[7,400],[7,400],[5,400],[2,400],[0,1200]] },
-    { id: 2, nome: "Ode à Alegria", seq: [[4,400],[4,400],[5,400],[7,400],[7,400],[5,400],[4,400],[2,400],[0,400],[0,400],[2,400],[4,400],[4,600],[2,200],[2,800],[-1,200],[4,400],[4,400],[5,400],[7,400],[7,400],[5,400],[4,400],[2,400],[0,400],[0,400],[2,400],[4,400],[2,600],[0,200],[0,800],[-1,300],[2,400],[2,400],[4,400],[0,400],[2,400],[4,200],[5,200],[4,400],[0,400],[2,400],[4,200],[5,200],[4,400],[2,400],[0,400],[2,400],[7,800],[-1,300],[4,400],[4,400],[5,400],[7,400],[7,400],[5,400],[4,400],[2,400],[0,400],[0,400],[2,400],[4,400],[2,600],[0,200],[0,800]] },
-    { id: 3, nome: "Brilha Brilha Estrela", seq: [[0,400],[0,400],[7,400],[7,400],[9,400],[9,400],[7,800],[-1,200],[5,400],[5,400],[4,400],[4,400],[2,400],[2,400],[0,800],[-1,200],[7,400],[7,400],[5,400],[5,400],[4,400],[4,400],[2,800],[-1,200],[7,400],[7,400],[5,400],[5,400],[4,400],[4,400],[2,800],[-1,200],[0,400],[0,400],[7,400],[7,400],[9,400],[9,400],[7,800],[-1,200],[5,400],[5,400],[4,400],[4,400],[2,400],[2,400],[0,800]] },
-    { id: 4, nome: "Parabéns", seq: [[0,300],[0,150],[2,450],[0,450],[5,450],[4,900],[-1,300],[0,300],[0,150],[2,450],[0,450],[7,450],[5,900],[-1,300],[0,300],[0,150],[12,450],[9,450],[5,450],[4,450],[2,900],[-1,300],[10,300],[10,150],[9,450],[5,450],[7,450],[5,900]] }
+    { id: 1, nome: "Bate o Sino", seq: [[4,400],[4,400],[4,800],[-1,100],[4,400],[4,400],[4,800],[-1,100],[4,400],[7,400],[0,400],[2,400],[4,1200],[-1,200],[5,400],[5,400],[5,400],[5,400],[5,400],[4,400],[4,400],[4,200],[4,200],[4,400],[2,400],[2,400],[4,400],[2,800],[-1,400],[4,400],[4,400],[4,800],[-1,100],[4,400],[4,400],[4,800],[-1,100],[4,400],[7,400],[0,400],[2,400],[4,1200],[-1,200],[5,400],[5,400],[5,400],[5,400],[5,400],[4,400],[4,400],[4,200],[4,200],[7,400],[7,400],[5,400],[2,400],[0,1200]] }
 ];
 
 async function ligarTudo() {
     if (!ctx) {
         ctx = new (window.AudioContext || window.webkitAudioContext)();
-        mG = ctx.createGain(); mG.connect(ctx.destination);
-        let dest = ctx.createMediaStreamDestination(); mG.connect(dest);
+        mG = ctx.createGain(); 
+        mG.connect(ctx.destination);
+        
+        let dest = ctx.createMediaStreamDestination(); 
+        mG.connect(dest);
+        
         recorder = new MediaRecorder(dest.stream);
         recorder.ondataavailable = e => chunks.push(e.data);
         recorder.onstop = () => {
             let n = prompt("Nome da gravação:");
             if(n) { 
-                listaS.push({ nome: n, url: URL.createObjectURL(new Blob(chunks)) }); 
+                listaS.push({ nome: n, url: URL.createObjectURL(new Blob(chunks, {type:'audio/mp3'})) }); 
                 localStorage.setItem('p_v12', JSON.stringify(listaS)); 
             }
             chunks = [];
         };
+        document.getElementById('txt-folha').value = localStorage.getItem('piano_txt') || '';
     }
     if (ctx.state === 'suspended') ctx.resume();
 }
 
 function som(f, id) {
-    if(!ctx) return;
-    let t = document.getElementById('timbre').value;
-    let vol = document.getElementById('vol').value;
-    let p = document.getElementById('pitch').value;
-    let freqReal = f * p;
+    if(!ctx || notasAtivas.has(id)) return;
+    
+    let volSlider = document.getElementById('vol').value;
+    let timbre = document.getElementById('timbre').value;
+    let freqReal = f * document.getElementById('pitch').value;
+    let t = ctx.currentTime;
 
     let g = ctx.createGain();
-    g.connect(mG); // CONEXÃO REESTABELECIDA AQUI!
-
-    let osc = ctx.createOscillator();
-    osc.frequency.value = freqReal;
-    let notaObj = { g: g, oscs: [osc], rel: 0.5 };
-
-    if (t === 'harpa' || t === 'sino') {
-        osc.type = t === 'harpa' ? 'sine' : 'triangle';
-        g.gain.setValueAtTime(0, ctx.currentTime);
-        g.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.02);
-        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + (t==='harpa'?3:2));
-        notaObj.rel = 2.0;
-    } else if (t === 'flauta') {
-        osc.type = 'sine';
-        let lfo = ctx.createOscillator(); lfo.frequency.value = 5.5;
-        let lfoG = ctx.createGain(); lfoG.gain.value = freqReal * 0.012;
-        lfo.connect(lfoG); lfoG.connect(osc.frequency);
-        lfo.start(); notaObj.oscs.push(lfo);
-        g.gain.setValueAtTime(0, ctx.currentTime);
-        g.gain.linearRampToValueAtTime(vol, ctx.currentTime + 0.1);
-    } else if (t === 'violino') {
-        osc.type = 'sawtooth';
-        g.gain.setValueAtTime(0, ctx.currentTime);
-        g.gain.linearRampToValueAtTime(vol * 0.5, ctx.currentTime + 0.2);
-    } else {
-        osc.type = 'triangle';
-        g.gain.setValueAtTime(vol * 0.8, ctx.currentTime);
-    }
-
-    osc.connect(g);
-    osc.start();
-    notasAtivas.set(id, notaObj);
-}
-
-function off(id) {
-    let n = notasAtivas.get(id);
-    if(n) {
-        let t = ctx.currentTime;
-        let d = ecoAtivo ? n.rel : 0.05;
-        n.g.gain.cancelScheduledValues(t);
-        n.g.gain.setValueAtTime(n.g.gain.value, t);
-        n.g.gain.exponentialRampToValueAtTime(0.001, t + d);
-        n.oscs.forEach(o => o.stop(t + d + 0.1));
-        notasAtivas.delete(id);
-    }
-}
-
-const tcl = document.getElementById('teclado');
-for(let i = 0; i < 25; i++) {
-    let f = 130.81 * Math.pow(2, i/12);
-    let id = 'k' + i;
-    let d = document.createElement('div');
-    d.className = `tecla ` + (nms[i%12].includes('#') ? 'preta' : 'branca');
-    d.id = id;
-    d.innerHTML = `<div class="progresso-nota"></div><small style="pointer-events:none; font-size:10px">${nms[i]}</small>`;
-    d.onpointerdown = e => { d.setPointerCapture(e.pointerId); hStart(id, f); };
-    d.onpointerup = e => hEnd(id);
-    tcl.appendChild(d);
-}
-
-function hStart(id, f) { ligarTudo(); som(f, id); document.getElementById(id).classList.add(nms[parseInt(id.slice(1))%12].includes('#')?'tecla-ativa-preta':'tecla-ativa-branca'); 
-    if(mus && id === 'k' + mus.seq[passo][0]) {
-        segurando = true;
-        let p = document.getElementById(id).querySelector('.progresso-nota');
-        p.style.transition = `height ${mus.seq[passo][1]}ms linear`;
-        p.style.height = '100%';
-    }
-}
-
-function hEnd(id) { off(id); document.getElementById(id).classList.remove('tecla-ativa-preta','tecla-ativa-branca'); 
-    if(mus && segurando && id === 'k' + mus.seq[passo][0]) { segurando = false; passo++; prox(); }
-}
-
-function irMenu() { fecharTelas(); document.getElementById('m-p').classList.add('ativa'); mus = null; }
-function irJogo() { fecharTelas(); document.getElementById('t-j').classList.add('ativa'); }
-function irMus() { 
-    fecharTelas(); document.getElementById('t-m').classList.add('ativa');
-    const l = document.getElementById('lista-m'); l.innerHTML = '';
-    banco.forEach(m => { 
-        l.innerHTML += `<div style="background:#222; margin-bottom:10px; padding:15px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; color:white"><span>${m.nome}</span><button class="btn" style="background:#00ff00; color:#000;" onclick="playM(${m.id})">JOGAR</button></div>`; 
-    });
-}
-function fecharTelas() { document.querySelectorAll('.tela').forEach(t => t.classList.remove('ativa')); }
-
-function playM(id) { 
-    mus = banco.find(m => m.id === id); passo = 0; fecharTelas();
-    document.getElementById('t-j').classList.add('ativa'); document.getElementById('txt-m').innerText = mus.nome; 
-    document.getElementById('container-progresso').style.display = 'block'; prox(); 
-}
-
-function prox() { 
-    document.querySelectorAll('.tecla').forEach(t => { t.classList.remove('alvo-amarelo'); t.querySelector('.progresso-nota').style.height = '0%'; });
-    if(mus) { 
-        document.getElementById('barra-progresso').style.width = (passo / mus.seq.length) * 100 + '%';
-        if(passo >= mus.seq.length) { alert("Música Concluída!"); irMenu(); return; }
-        if(mus.seq[passo][0] === -1) { setTimeout(() => { passo++; prox(); }, mus.seq[passo][1]); } 
-        else { document.getElementById('k' + mus.seq[passo][0]).classList.add('alvo-amarelo'); }
-    }
-}
-
-function toggleRec() {
-    if(!gravando) { recorder.start(); gravando = true; document.getElementById('btn-rec').style.background = "red"; }
-    else { recorder.stop(); gravando = false; document.getElementById('btn-rec').style.background = "#555"; }
-}
-
-function irSalvas() {
-    fecharTelas(); document.getElementById('t-s').classList.add('ativa');
-    const l = document.getElementById('lista-salvas'); l.innerHTML = '';
-    listaS.forEach(s => { l.innerHTML += `<div style="background:#222; padding:10px; margin-bottom:5px;"><b>${s.nome}</b><br><audio controls src="${s.url}"></audio></div>`; });
-}
-</script>
-</body>
-        </html>
+    g.connect(mG);
+    
+    let notaObj = { g: g, oscs: [], rel: 0.5, custom: false };
+    
+    if (timbre === 'piano') {
+        let osc1 = ctx.createOscillator(); osc
     
