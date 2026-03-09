@@ -3,454 +3,349 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neon Rhythm - Mobile</title>
+    <title>Neon Rhythm Pro</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
 
         :root {
-            --bg-color: #0b0c10;
-            --primary: #45f3ff;
-            --secondary: #ff007c;
-            --text: #c5c6c7;
-        }
-
-        * {
-            box-sizing: border-box;
-            user-select: none; /* Evita selecionar texto ao tocar */
-            -webkit-user-select: none;
+            --bg: #050505;
+            --neon-blue: #00f3ff;
+            --neon-pink: #ff007c;
+            --neon-green: #39ff14;
+            --neon-yellow: #ffea00;
         }
 
         body {
             margin: 0;
-            padding: 0;
-            background-color: var(--bg-color);
+            background: var(--bg);
             color: white;
             font-family: 'Orbitron', sans-serif;
-            overflow: hidden; /* Evita rolagem na tela */
-            width: 100vw;
-            height: 100vh;
+            overflow: hidden;
+            touch-action: none;
         }
 
-        /* --- MENU --- */
-        #menu {
+        /* --- MENUS --- */
+        .screen {
             position: absolute;
-            top: 0;
-            left: 0;
             width: 100%;
             height: 100%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: radial-gradient(circle at center, #1f2833 0%, #0b0c10 100%);
-            z-index: 10;
-            padding: 20px;
+            background: radial-gradient(circle, #1a1a1a 0%, #050505 100%);
+            z-index: 100;
             text-align: center;
+            padding: 20px;
+            box-sizing: border-box;
         }
 
         h1 {
-            font-size: 2.5rem;
-            margin-bottom: 10px;
-            color: transparent;
-            -webkit-text-stroke: 1px var(--primary);
-            text-shadow: 0 0 15px rgba(69, 243, 255, 0.5);
-            letter-spacing: 2px;
+            font-size: 3rem;
+            margin: 0;
+            background: linear-gradient(to bottom, #fff, var(--neon-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 10px var(--neon-blue));
         }
 
-        p.subtitle {
-            color: var(--text);
-            font-size: 0.9rem;
-            margin-bottom: 40px;
+        .difficulty-container {
+            margin: 20px 0;
+            display: flex;
+            gap: 10px;
         }
 
-        .upload-btn-wrapper {
-            position: relative;
-            overflow: hidden;
-            display: inline-block;
-            margin-bottom: 20px;
-        }
-
-        .btn-upload {
-            border: 2px dashed var(--primary);
-            color: var(--primary);
-            background-color: transparent;
-            padding: 15px 30px;
-            border-radius: 10px;
-            font-size: 1rem;
-            font-family: 'Orbitron', sans-serif;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .upload-btn-wrapper input[type=file] {
-            font-size: 100px;
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            cursor: pointer;
-            height: 100%;
-        }
-
-        #playBtn {
-            background: var(--secondary);
+        .btn {
+            background: transparent;
+            border: 2px solid white;
             color: white;
-            border: none;
-            padding: 15px 50px;
-            font-size: 1.2rem;
-            font-family: 'Orbitron', sans-serif;
-            font-weight: bold;
-            border-radius: 30px;
-            box-shadow: 0 0 20px rgba(255, 0, 124, 0.6);
+            padding: 12px 20px;
+            border-radius: 5px;
+            font-family: 'Orbitron';
             cursor: pointer;
-            opacity: 0.5;
-            pointer-events: none; /* Desativado inicialmente */
-            transition: all 0.3s ease;
+            transition: 0.3s;
         }
 
-        #playBtn.active {
-            opacity: 1;
-            pointer-events: auto;
-            transform: scale(1.05);
+        .btn:active { transform: scale(0.9); }
+        .btn.active { background: white; color: black; box-shadow: 0 0 15px white; }
+
+        .btn-play {
+            background: var(--neon-pink);
+            border: none;
+            padding: 15px 60px;
+            font-size: 1.5rem;
+            border-radius: 50px;
+            font-weight: 900;
+            box-shadow: 0 0 20px var(--neon-pink);
+            margin-top: 30px;
+            display: none;
         }
 
-        #playBtn.active:active {
-            transform: scale(0.95);
-        }
-
-        #status {
-            margin-top: 20px;
-            font-size: 0.9rem;
-            color: var(--primary);
-            min-height: 20px;
-        }
+        #file-info { margin-top: 15px; color: var(--neon-blue); font-size: 0.8rem; }
 
         /* --- JOGO --- */
-        #gameContainer {
+        #game-ui {
             position: absolute;
-            top: 0;
-            left: 0;
+            top: 40px;
             width: 100%;
-            height: 100%;
-            display: none; /* Escondido até o jogo começar */
-        }
-
-        canvas {
-            display: block;
-            width: 100%;
-            height: 100%;
-        }
-
-        #ui {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            font-size: 1.5rem;
-            color: white;
-            text-shadow: 0 0 10px var(--primary);
+            text-align: center;
+            font-size: 2rem;
             pointer-events: none;
+            z-index: 5;
         }
+
+        canvas { display: block; }
+
+        /* --- RESULTADO --- */
+        #result-screen { display: none; }
+        .stat-box { font-size: 4rem; color: var(--neon-green); margin: 20px 0; }
     </style>
 </head>
 <body>
 
-    <div id="menu">
-        <h1>NEON BEAT</h1>
-        <p class="subtitle">Escolha um áudio/vídeo da galeria (Máx: 5 min)</p>
+    <div id="main-menu" class="screen">
+        <h1>NEON RHYTHM</h1>
+        <p>Selecione um arquivo (Áudio/Vídeo - Máx 5m)</p>
+        
+        <input type="file" id="fileInput" accept="audio/*, video/*" style="display:none">
+        <button class="btn" onclick="document.getElementById('fileInput').click()">📁 ABRIR GALERIA</button>
+        <div id="file-info">Nenhum arquivo selecionado</div>
 
-        <div class="upload-btn-wrapper">
-            <button class="btn-upload" id="uploadLabel">📁 Selecionar Arquivo</button>
-            <input type="file" id="fileInput" accept="audio/*, video/*">
+        <div class="difficulty-container">
+            <button class="btn diff-btn" onclick="setDiff('EASY', this)">FÁCIL</button>
+            <button class="btn diff-btn active" onclick="setDiff('MED', this)">MÉDIO</button>
+            <button class="btn diff-btn" onclick="setDiff('HARD', this)">DIFÍCIL</button>
         </div>
 
-        <button id="playBtn">TOCAR</button>
-        <div id="status">Aguardando mídia...</div>
+        <button id="playBtn" class="btn-play" onclick="startGame()">JOGAR</button>
     </div>
 
-    <div id="gameContainer">
-        <div id="ui">SCORE: <span id="scoreDisplay">0</span></div>
-        <canvas id="gameCanvas"></canvas>
+    <div id="result-screen" class="screen">
+        <h2>CONCLUÍDO!</h2>
+        <div class="stat-box" id="final-percent">0%</div>
+        <button class="btn" onclick="restartGame()">REFAZER</button>
+        <button class="btn" onclick="backToMenu()" style="margin-top:10px; border-color: var(--neon-pink)">VOLTAR AO MENU</button>
     </div>
+
+    <div id="game-ui" style="display:none"><span id="percentDisplay">100.0</span>%</div>
+    <canvas id="gameCanvas"></canvas>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const menu = document.getElementById('menu');
-        const gameContainer = document.getElementById('gameContainer');
-        const fileInput = document.getElementById('fileInput');
         const playBtn = document.getElementById('playBtn');
-        const statusText = document.getElementById('status');
-        const uploadLabel = document.getElementById('uploadLabel');
-        const scoreDisplay = document.getElementById('scoreDisplay');
+        const fileInput = document.getElementById('fileInput');
 
-        // Ajustar canvas para tela do celular
+        let audioCtx, audioBuffer, audioSource, startTime;
+        let isPlaying = false;
+        let notes = [];
+        let score = 0, totalPossible = 0;
+        let difficulty = 'MED';
+        
+        const COLS = 4;
+        const COL_W = window.innerWidth / COLS;
+        const HIT_Y = window.innerHeight * 0.85;
+        const NOTE_SPEED = window.innerHeight * 0.7; // px por seg
+        const colColors = ['#ff007c', '#00f3ff', '#39ff14', '#ffea00'];
+
+        // Controle de Toque
+        let activeTouches = {}; // col: true/false
+
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
 
-        // Configurações do jogo
-        const COLS = 4;
-        const COL_WIDTH = canvas.width / COLS;
-        const HIT_AREA_HEIGHT = canvas.height * 0.15; // Área de toque na base
-        const HIT_LINE_Y = canvas.height - HIT_AREA_HEIGHT;
-        const NOTE_HEIGHT = canvas.height * 0.08;
-        const NOTE_SPEED = canvas.height * 0.6; // Velocidade baseada na altura da tela
-        const MAX_DURATION = 300; // 5 minutos
+        function setDiff(d, btn) {
+            difficulty = d;
+            document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
 
-        // Cores vibrantes para cada coluna
-        const colColors = ['#ff0055', '#00f3ff', '#39ff14', '#ffea00'];
-
-        let audioContext;
-        let audioBuffer;
-        let audioSource;
-        let startTime = 0;
-        let notes = [];
-        let isPlaying = false;
-        let score = 0;
-
-        // Controle de toques (Mobile)
-        const keysPressed = { 0: false, 1: false, 2: false, 3: false };
-
-        // Processar o arquivo quando escolhido
-        fileInput.addEventListener('change', async (e) => {
+        fileInput.onchange = async (e) => {
             const file = e.target.files[0];
             if (!file) return;
-
-            uploadLabel.innerText = "🎵 " + (file.name.length > 15 ? file.name.substring(0, 15) + "..." : file.name);
-            statusText.innerText = "Lendo arquivo...";
-            playBtn.classList.remove('active');
-
-            // Criar o contexto de áudio
-            if (!audioContext) {
-                audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            }
-
-            const arrayBuffer = await file.arrayBuffer();
+            document.getElementById('file-info').innerText = "Processando: " + file.name;
             
-            try {
-                audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
-                
-                if (audioBuffer.duration > MAX_DURATION) {
-                    statusText.innerText = "Erro: O arquivo tem mais de 5 minutos!";
-                    statusText.style.color = "#ff007c";
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const buffer = await file.arrayBuffer();
+            
+            audioCtx.decodeAudioData(buffer, (decoded) => {
+                if (decoded.duration > 300) {
+                    alert("Máximo 5 minutos!");
                     return;
                 }
+                audioBuffer = decoded;
+                playBtn.style.display = 'block';
+                document.getElementById('file-info').innerText = "Pronto para o show!";
+            });
+        };
 
-                statusText.innerText = "Áudio pronto! Clique em TOCAR.";
-                statusText.style.color = "#39ff14";
-                
-                // Analisa as batidas
-                notes = detectBeats(audioBuffer);
-                
-                // Ativa o botão de jogar
-                playBtn.classList.add('active');
-            } catch (err) {
-                statusText.innerText = "Erro ao ler o áudio. Tente outro arquivo.";
-                statusText.style.color = "#ff007c";
-            }
-        });
-
-        // Botão Jogar
-        playBtn.addEventListener('click', () => {
-            if (!audioBuffer) return;
-            
-            // Oculta menu, mostra jogo
-            menu.style.display = 'none';
-            gameContainer.style.display = 'block';
-            
-            // É necessário dar "resume" no áudio após interação do usuário em celulares
-            if(audioContext.state === 'suspended') {
-                audioContext.resume();
-            }
-
-            startGame();
-        });
-
-        // Eventos de Toque na tela (Mobile Touch)
-        canvas.addEventListener('touchstart', handleTouch, { passive: false });
-        canvas.addEventListener('touchmove', handleTouch, { passive: false });
-        canvas.addEventListener('touchend', releaseTouch, { passive: false });
-        canvas.addEventListener('touchcancel', releaseTouch, { passive: false });
-
-        function handleTouch(e) {
-            e.preventDefault(); // Impede rolagem ou zoom
-            // Reseta todas as teclas
-            for(let key in keysPressed) keysPressed[key] = false;
-            
-            // Verifica onde os dedos estão tocando
-            for (let i = 0; i < e.touches.length; i++) {
-                let touch = e.touches[i];
-                let col = Math.floor(touch.clientX / COL_WIDTH);
-                if(col >= 0 && col < COLS) {
-                    keysPressed[col] = true;
-                }
-            }
-        }
-
-        function releaseTouch(e) {
-            e.preventDefault();
-            for(let key in keysPressed) keysPressed[key] = false;
-            // Reativa as teclas que ainda têm dedos tocando
-            for (let i = 0; i < e.touches.length; i++) {
-                let touch = e.touches[i];
-                let col = Math.floor(touch.clientX / COL_WIDTH);
-                if(col >= 0 && col < COLS) {
-                    keysPressed[col] = true;
-                }
-            }
-        }
-
-        // Algoritmo de detecção de batidas
-        function detectBeats(buffer) {
+        function detectNotes(buffer) {
             const data = buffer.getChannelData(0);
-            const sampleRate = buffer.sampleRate;
-            const step = Math.floor(sampleRate * 0.1); 
-            const generatedNotes = [];
+            const sr = buffer.sampleRate;
+            const step = sr * 0.1; 
+            const detected = [];
+            
+            // Ajuste de sensibilidade por dificuldade
+            const sens = { 'EASY': 4.0, 'MED': 2.8, 'HARD': 1.8 }[difficulty];
+            const speedMult = { 'EASY': 0.7, 'MED': 1.0, 'HARD': 1.4 }[difficulty];
 
-            let totalVolume = 0;
-            for(let i = 0; i < data.length; i += 100) {
-                totalVolume += Math.abs(data[i]);
-            }
-            const averageVolume = totalVolume / (data.length / 100);
-            const threshold = averageVolume * 2.8; // Sensibilidade do ritmo
+            let totalVol = 0;
+            for(let i=0; i<data.length; i+=200) totalVol += Math.abs(data[i]);
+            const avg = totalVol / (data.length / 200);
 
             for (let i = 0; i < data.length; i += step) {
-                let max = 0;
-                for (let j = 0; j < step && (i + j) < data.length; j++) {
-                    let val = Math.abs(data[i + j]);
-                    if (val > max) max = val;
+                let chunkMax = 0;
+                for(let j=0; j<step && (i+j)<data.length; j++) {
+                    if(Math.abs(data[i+j]) > chunkMax) chunkMax = Math.abs(data[i+j]);
                 }
 
-                if (max > threshold) {
-                    generatedNotes.push({
-                        time: i / sampleRate,
-                        col: Math.floor(Math.random() * COLS),
-                        hit: false,
-                        missed: false
+                if (chunkMax > avg * sens) {
+                    const time = i / sr;
+                    const rand = Math.random();
+                    let type = 'tap';
+                    let duration = 0;
+                    let endCol = Math.floor(Math.random() * 4);
+
+                    // Gerar tipos diferentes de notas
+                    if (rand > 0.85) {
+                        type = 'hold';
+                        duration = 0.4 + Math.random() * 0.6;
+                    } else if (rand > 0.75) {
+                        type = 'slide';
+                        endCol = (endCol + 1) % 4;
+                    }
+
+                    detected.push({
+                        time, type, duration, 
+                        col: Math.floor(Math.random() * 4),
+                        endCol, hit: false, holdProgress: 0
                     });
                 }
             }
-            return generatedNotes;
+            return detected;
         }
 
         function startGame() {
-            if (audioSource) audioSource.disconnect();
-            
-            audioSource = audioContext.createBufferSource();
-            audioSource.buffer = audioBuffer;
-            audioSource.connect(audioContext.destination);
-            
+            document.getElementById('main-menu').style.display = 'none';
+            document.getElementById('game-ui').style.display = 'block';
+            notes = detectNotes(audioBuffer);
+            totalPossible = notes.length;
             score = 0;
-            scoreDisplay.innerText = score;
+            
+            audioSource = audioCtx.createBufferSource();
+            audioSource.buffer = audioBuffer;
+            audioSource.connect(audioCtx.destination);
+            
             isPlaying = true;
-            startTime = audioContext.currentTime;
-            
+            startTime = audioCtx.currentTime;
             audioSource.start();
+            audioSource.onended = showResults;
             
-            audioSource.onended = () => {
-                isPlaying = false;
-                setTimeout(() => {
-                    alert("Fim da música! Pontuação Final: " + score);
-                    menu.style.display = 'flex';
-                    gameContainer.style.display = 'none';
-                    playBtn.classList.remove('active');
-                    uploadLabel.innerText = "📁 Selecionar Arquivo";
-                    statusText.innerText = "Jogue novamente!";
-                }, 1000);
-            };
-
             requestAnimationFrame(gameLoop);
         }
+
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            Array.from(e.touches).forEach(t => {
+                const col = Math.floor(t.clientX / COL_W);
+                activeTouches[col] = true;
+            });
+        });
+
+        canvas.addEventListener('touchend', (e) => {
+            e.preventDefault();
+            activeTouches = {};
+            Array.from(e.touches).forEach(t => {
+                const col = Math.floor(t.clientX / COL_W);
+                activeTouches[col] = true;
+            });
+        });
 
         function gameLoop() {
             if (!isPlaying) return;
-
-            const currentTime = audioContext.currentTime - startTime;
-
-            // Limpa o canvas
-            ctx.fillStyle = 'rgba(11, 12, 16, 0.8)'; // Efeito de rastro leve
+            const now = audioCtx.currentTime - startTime;
+            
+            ctx.fillStyle = '#050505';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            // Desenha as pistas (Colunas)
-            for (let i = 0; i < COLS; i++) {
-                // Divisórias
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(i * COL_WIDTH, 0);
-                ctx.lineTo(i * COL_WIDTH, canvas.height);
-                ctx.stroke();
-
-                // Área de toque inferior
-                ctx.fillStyle = keysPressed[i] ? 'rgba(255, 255, 255, 0.2)' : 'rgba(255, 255, 255, 0.05)';
-                ctx.fillRect(i * COL_WIDTH, HIT_LINE_Y, COL_WIDTH, HIT_AREA_HEIGHT);
-
-                // Efeito neon nos botões pressionados
-                if (keysPressed[i]) {
-                    ctx.shadowBlur = 20;
-                    ctx.shadowColor = colColors[i];
+            // Desenhar Trilhas
+            for(let i=0; i<COLS; i++) {
+                ctx.fillStyle = activeTouches[i] ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.02)';
+                ctx.fillRect(i*COL_W, 0, COL_W, canvas.height);
+                if(activeTouches[i]) {
                     ctx.fillStyle = colColors[i];
-                    ctx.fillRect((i * COL_WIDTH) + 5, HIT_LINE_Y, COL_WIDTH - 10, 5);
-                    ctx.shadowBlur = 0; // reseta
+                    ctx.fillRect(i*COL_W, HIT_Y, COL_W, 5);
                 }
             }
 
-            // Linha de acerto (Hit Line)
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.moveTo(0, HIT_LINE_Y);
-            ctx.lineTo(canvas.width, HIT_LINE_Y);
-            ctx.stroke();
+            notes.forEach(n => {
+                if (n.hit) return;
+                const y = HIT_Y - ((n.time - now) * NOTE_SPEED);
 
-            // Lógica das Notas
-            notes.forEach(note => {
-                if (note.hit || note.missed) return;
+                if (y > canvas.height + 100) return;
 
-                const y = HIT_LINE_Y - ((note.time - currentTime) * NOTE_SPEED);
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = colColors[n.col];
+                ctx.fillStyle = colColors[n.col];
 
-                // Se a nota passou muito da linha e não foi tocada
-                if (y > canvas.height) {
-                    note.missed = true;
-                    return;
-                }
-
-                // Desenha a nota se estiver na tela
-                if (y > -NOTE_HEIGHT && y < canvas.height) {
-                    // Visual da nota (Cores neon dependendo da coluna)
-                    ctx.shadowBlur = 15;
-                    ctx.shadowColor = colColors[note.col];
-                    ctx.fillStyle = colColors[note.col];
+                if (n.type === 'tap') {
+                    ctx.fillRect(n.col * COL_W + 10, y, COL_W - 20, 40);
+                    if (activeTouches[n.col] && Math.abs(y - HIT_Y) < 50) {
+                        n.hit = true; score++;
+                    }
+                } 
+                else if (n.type === 'hold') {
+                    const tailH = n.duration * NOTE_SPEED;
+                    ctx.globalAlpha = 0.5;
+                    ctx.fillRect(n.col * COL_W + 20, y - tailH, COL_W - 40, tailH);
+                    ctx.globalAlpha = 1.0;
+                    ctx.fillRect(n.col * COL_W + 10, y, COL_W - 20, 40);
                     
-                    // Nota com cantos arredondados simulados
-                    const margin = 10;
-                    ctx.fillRect((note.col * COL_WIDTH) + margin, y, COL_WIDTH - (margin*2), NOTE_HEIGHT);
-                    ctx.fillStyle = '#fff';
-                    ctx.fillRect((note.col * COL_WIDTH) + margin + 5, y + 5, COL_WIDTH - (margin*2) - 10, NOTE_HEIGHT - 10);
-                    
-                    ctx.shadowBlur = 0; // reseta para não bugar outros desenhos
-
-                    // Lógica de Acerto (Colisão)
-                    // Verifica se o jogador está tocando na coluna e se a nota está na área do hit
-                    if (keysPressed[note.col] && Math.abs(y - HIT_LINE_Y) < (NOTE_HEIGHT + 20)) {
-                        note.hit = true;
-                        score += 10;
-                        scoreDisplay.innerText = score;
-                        // Efeito visual rápido de acerto (piscar tela ou algo parecido pode ser adicionado aqui)
+                    if (activeTouches[n.col] && y >= HIT_Y && (y - tailH) <= HIT_Y) {
+                        n.holdProgress += 0.02;
+                        if(n.holdProgress >= 1) { n.hit = true; score++; }
                     }
                 }
+                else if (n.type === 'slide') {
+                    ctx.beginPath();
+                    ctx.moveTo(n.col * COL_W + COL_W/2, y);
+                    ctx.lineTo(n.endCol * COL_W + COL_W/2, y - 100);
+                    ctx.strokeStyle = colColors[n.col];
+                    ctx.lineWidth = 10;
+                    ctx.stroke();
+                    ctx.fillRect(n.col * COL_W + 10, y, COL_W - 20, 40);
+
+                    if (activeTouches[n.col] && Math.abs(y - HIT_Y) < 50) {
+                        n.hit = true; score++;
+                    }
+                }
+                ctx.shadowBlur = 0;
             });
+
+            const percent = ((score / totalPossible) * 100).toFixed(1);
+            document.getElementById('percentDisplay').innerText = percent;
 
             requestAnimationFrame(gameLoop);
         }
 
-        // Atualiza o tamanho do canvas se a pessoa girar o celular
-        window.addEventListener('resize', () => {
-            if(canvas.width !== window.innerWidth) {
-                canvas.width = window.innerWidth;
-                canvas.height = window.innerHeight;
-            }
-        });
+        function showResults() {
+            isPlaying = false;
+            document.getElementById('game-ui').style.display = 'none';
+            document.getElementById('result-screen').style.display = 'flex';
+            document.getElementById('final-percent').innerText = document.getElementById('percentDisplay').innerText + "%";
+        }
+
+        function restartGame() {
+            document.getElementById('result-screen').style.display = 'none';
+            startGame();
+        }
+
+        function backToMenu() {
+            document.getElementById('result-screen').style.display = 'none';
+            document.getElementById('main-menu').style.display = 'flex';
+            playBtn.style.display = 'none';
+            document.getElementById('file-info').innerText = "Nenhum arquivo selecionado";
+        }
     </script>
 </body>
-          </html>
-                                                                              
+</html>
