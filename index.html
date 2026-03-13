@@ -3,377 +3,430 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Ultimate Beat Sync Pro</title>
+    <title>Neon Rhythm Masters</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&display=swap');
-
         :root {
-            --bg: #050508;
-            --primary: #00ffcc;
-            --secondary: #ff00ff;
-            --danger: #ff3366;
-            --col-0: #00d2ff; --col-1: #ff007c; --col-2: #ff007c; --col-3: #00d2ff;
+            --purple-neon: #bc13fe;
+            --purple-dark: #1a0033;
+            --bg-black: #050505;
+            --trail-glow: 0 0 15px #bc13fe, 0 0 30px #bc13fe;
+            --note-glow: 0 0 20px #bc13fe;
+            --text-glow: 0 0 10px #bc13fe;
         }
 
-        * { box-sizing: border-box; font-family: 'Rajdhani', sans-serif; user-select: none; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
-        body { background-color: var(--bg); color: white; overflow: hidden; height: 100vh; touch-action: none; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Courier New', Courier, monospace; -webkit-tap-highlight-color: transparent; }
 
-        /* --- Telas de Interface --- */
-        .screen { display: none; width: 100%; height: 100%; position: absolute; top: 0; left: 0; flex-direction: column; align-items: center; justify-content: center; background: radial-gradient(circle at center, #11111a 0%, #000 100%); z-index: 10; padding: 20px; }
-        .screen.active { display: flex; }
+        body { background-color: var(--bg-black); color: white; overflow: hidden; height: 100vh; touch-action: none; }
 
-        .panel { background: rgba(20, 20, 30, 0.9); padding: 30px; border-radius: 20px; border: 1px solid rgba(0, 255, 204, 0.3); backdrop-filter: blur(15px); text-align: center; width: 100%; max-width: 450px; box-shadow: 0 0 50px #000; }
-        
-        h1 { font-size: 3rem; text-transform: uppercase; letter-spacing: 4px; margin-bottom: 20px; text-shadow: 0 0 15px var(--primary); }
-        .btn { background: linear-gradient(45deg, var(--primary), #00b3ff); color: #000; border: none; padding: 15px; font-size: 1.4rem; font-weight: bold; border-radius: 12px; cursor: pointer; width: 100%; text-transform: uppercase; transition: 0.2s; margin-top: 15px; }
-        .btn:active { transform: scale(0.95); }
-
-        /* --- HUD do Jogo --- */
-        #game-ui { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5; display: none; }
-        .stats-top { display: flex; justify-content: space-between; padding: 15px 25px; font-size: 1.2rem; background: linear-gradient(to bottom, rgba(0,0,0,0.8), transparent); }
-        .hp-box { width: 200px; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; margin-top: 8px; border: 1px solid #333; }
-        #hp-bar { height: 100%; width: 100%; background: var(--primary); transition: 0.3s; box-shadow: 0 0 10px var(--primary); }
-        
-        #combo-display { position: absolute; top: 25%; left: 50%; transform: translateX(-50%); text-align: center; opacity: 0; transition: 0.1s; }
-        #combo-num { font-size: 5rem; font-weight: 700; display: block; }
-        #judgment { font-size: 2rem; font-weight: bold; text-transform: uppercase; margin-top: -10px; }
-
-        /* --- Pista e Notas (Responsivo) --- */
-        #highway { position: relative; width: 100%; max-width: 500px; height: 100%; background: rgba(0,0,0,0.6); margin: 0 auto; display: none; border-left: 1px solid #222; border-right: 1px solid #222; }
-        .track-line { position: absolute; top: 0; bottom: 0; width: 1px; background: rgba(255,255,255,0.05); }
-        
-        #receptors { position: absolute; bottom: 10%; width: 100%; height: 80px; display: flex; padding: 0 5px; gap: 8px; z-index: 4; }
-        .receptor { flex: 1; border: 2px solid #444; border-radius: 12px; background: rgba(0,0,0,0.8); display: flex; flex-direction: column; justify-content: center; align-items: center; font-weight: bold; color: #555; transition: 0.1s; }
-        .receptor.active { transform: translateY(5px); border-color: #fff; color: #fff; box-shadow: 0 0 20px rgba(255,255,255,0.4); background: rgba(255,255,255,0.1); }
-
-        .note { position: absolute; width: calc(25% - 12px); height: 20px; border-radius: 6px; will-change: transform; z-index: 3; }
-        .note-0 { background: var(--col-0); box-shadow: 0 0 15px var(--col-0); }
-        .note-1 { background: var(--col-1); box-shadow: 0 0 15px var(--col-1); }
-        .note-2 { background: var(--col-2); box-shadow: 0 0 15px var(--col-2); }
-        .note-3 { background: var(--col-3); box-shadow: 0 0 15px var(--col-3); }
-
-        /* --- Loading Spinner --- */
-        .loader { width: 60px; height: 60px; border: 5px solid #1a1a24; border-top: 5px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        @media (max-width: 600px) {
-            h1 { font-size: 2.2rem; }
-            #receptors { bottom: 15%; } /* Mais alto no mobile para não bater na barra do sistema */
+        /* Telas */
+        .screen {
+            position: absolute; width: 100%; height: 100%; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: radial-gradient(circle at center, var(--purple-dark) 0%, var(--bg-black) 100%);
+            transition: opacity 0.5s ease;
+            z-index: 10;
         }
+
+        .screen.hidden { opacity: 0; pointer-events: none; z-index: -1; }
+
+        /* Menu */
+        .card { background: rgba(26, 0, 51, 0.7); padding: 30px; border-radius: 20px; border: 2px solid var(--purple-neon); width: 90%; max-width: 450px; box-shadow: var(--trail-glow); text-align: center; }
+        h1 { font-size: 2.2rem; margin-bottom: 25px; text-shadow: var(--text-glow); color: white; }
+        h2 { font-size: 1.5rem; margin-bottom: 15px; text-shadow: var(--text-glow); color: white;}
+        p { margin-bottom: 15px; color: #ccc; }
+
+        /* Jogo */
+        #gameArea {
+            position: relative; width: 100%; max-width: 400px; height: 100vh;
+            background: linear-gradient(to bottom, transparent, rgba(188, 19, 254, 0.1));
+            display: flex; border-left: 1px solid #333; border-right: 1px solid #333;
+            margin: 0 auto;
+        }
+
+        .lane { flex: 1; border-right: 1px solid rgba(255,255,255,0.05); position: relative; }
+        .lane-highlight { position: absolute; bottom: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--purple-neon), transparent); opacity: 0; pointer-events: none; transition: opacity 0.1s; z-index: 2; }
+        .lane.active-lane .lane-highlight { opacity: 0.5; }
+
+        /* Notas */
+        .note { 
+            position: absolute; width: 90%; left: 5%; height: 25px; 
+            background: var(--purple-neon); border-radius: 5px; 
+            box-shadow: var(--note-glow); z-index: 3;
+        }
+        .note-long { height: 80px; } /* Nota longa simples */
+        .fake-note { background: #ff0044 !important; box-shadow: 0 0 20px #ff0044 !important; }
+        
+        #hitLine { 
+            position: absolute; bottom: 100px; width: 100%; height: 6px; 
+            background: white; box-shadow: 0 0 20px white; z-index: 5;
+        }
+
+        /* HUD */
+        #hud { position: absolute; top: 15px; width: 100%; max-width: 400px; padding: 0 20px; display: flex; justify-content: space-between; z-index: 50; font-size: 1.1rem; pointer-events: none; margin: 0 auto; left:0; right:0;}
+        #accTxt { text-shadow: var(--text-glow); }
+        #comboCount { font-size: 2rem; color: var(--purple-neon); text-shadow: var(--trail-glow); }
+        #celebration { 
+            position: absolute; top: 80px; width: 100%; text-align: center; 
+            font-size: 2.8rem; color: white; text-shadow: var(--trail-glow); 
+            display: none; animation: celebrationPop 0.8s ease; z-index: 60;
+        }
+
+        /* Botões e Inputs */
+        input[type=range] { width: 100%; accent-color: var(--purple-neon); margin: 15px 0; background: transparent; cursor: pointer;}
+        button { 
+            background: transparent; color: white; border: 2px solid var(--purple-neon); padding: 15px 30px; 
+            border-radius: 10px; font-weight: bold; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: 0 0 10px rgba(188, 19, 254, 0.5); font-size: 1rem; margin-top: 15px; width: 100%;
+        }
+        button:hover { background: var(--purple-neon); box-shadow: var(--trail-glow); color: black; }
+        button:active { transform: scale(0.98); }
+
+        /* Popups de Acerto */
+        #judgment { position: absolute; top: 45%; width: 100%; text-align: center; font-size: 2.5rem; font-weight: bold; pointer-events: none; z-index: 55; text-transform: uppercase; }
+
+        @keyframes celebrationPop { 0% { transform: scale(0.5); opacity: 0; } 70% { transform: scale(1.1); opacity: 1; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes judgmentFade { 0% { opacity: 1; transform: scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: scale(0.8); } }
+
+        /* Tutorial e Feedback */
+        .modal-content { text-align: left; }
+        .key-note { display: inline-block; width: 20px; height: 10px; border-radius: 2px; margin-right: 5px; }
+        textarea { width: 100%; background: rgba(0,0,0,0.3); border: 1px solid #444; color: white; padding: 10px; margin: 10px 0; border-radius: 5px; resize: none; font-size: 0.9rem;}
+        textarea:focus { border-color: var(--purple-neon); outline: none;}
+
+        /* Resultado */
+        #gradeDisplay { font-size: 8rem; font-weight: bold; margin: 20px 0; text-shadow: var(--trail-glow); }
+        .stat-line { font-size: 1rem; color: #aaa; margin-bottom: 5px; display: flex; justify-content: space-between;}
+        .stat-line span { color: white; font-weight: bold;}
+
     </style>
 </head>
 <body>
 
-    <div id="game-ui">
-        <div class="stats-top">
-            <div>SCORE: <span id="score-text">0</span><div class="hp-box"><div id="hp-bar"></div></div></div>
-            <div style="text-align:right">ACC: <span id="acc-text">100%</span><br><small>ESC p/ Pausar</small></div>
-        </div>
-        <div id="combo-display"><span id="combo-num">0</span><div id="judgment"></div></div>
+    <div id="loadingScreen" class="screen">
+        <h1 style="text-shadow: var(--trail-glow);">NEON RHYTHM</h1>
+        <p>Carregando energias...</p>
     </div>
 
-    <div id="menu-screen" class="screen active">
-        <div class="panel">
-            <h1>BEAT SYNC <span style="color:var(--primary)">ULTIMATE</span></h1>
-            <p style="color:#888; margin-bottom:15px">Escolha uma música para gerar o desafio</p>
-            <label for="audio-upload" style="display:block; border:2px dashed var(--primary); padding:15px; border-radius:10px; cursor:pointer; color:var(--primary); font-weight:bold;" id="file-label">📁 CARREGAR MÚSICA</label>
-            <input type="file" id="audio-upload" accept="audio/*, video/*" style="display:none">
-            
-            <div style="margin-top:15px; text-align:left">
-                <label style="font-size:0.9rem; color:#aaa">Dificuldade:</label>
-                <select id="diff-select" style="width:100%; padding:10px; background:#111; color:#fff; border:1px solid #444; border-radius:8px;">
-                    <option value="1">Fácil (Relaxante)</option>
-                    <option value="3" selected>Normal (Recomendado)</option>
-                    <option value="5">Insano (Veloz)</option>
-                </select>
+    <div id="menuScreen" class="screen hidden">
+        <div class="card">
+            <h1>MENU</h1>
+            <p>Selecione a Dificuldade (1-10)</p>
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <span style="color: #888">Fácil</span>
+                <span id="diffLabel" style="font-size: 2rem; color: var(--purple-neon); text-shadow: var(--text-glow);">5</span>
+                <span style="color: #888">Hardcore</span>
             </div>
-            <button class="btn" id="start-btn">JOGAR AGORA</button>
-            <p id="error-log" style="color:var(--danger); margin-top:10px; font-size:0.9rem"></p>
+            <input type="range" id="diffSlider" min="1" max="10" value="5">
+            <p id="diffDesc" style="color: #aaa; font-size: 0.8rem; height: 35px; margin-bottom: 20px;">Ritmo médio e poucas notas falsas.</p>
+            
+            <button onclick="showTutorial()">TUTORIAL</button>
+            <button onclick="initGame()">INICIAR PARTIDA</button>
+            <button onclick="showFeedback()">FEEDBACK</button>
         </div>
     </div>
 
-    <div id="loading-screen" class="screen"><div class="loader"></div><h2 style="margin-top:20px">SINCRONIZANDO O RITMO...</h2></div>
-
-    <div id="highway">
-        <div class="track-line" style="left:25%"></div><div class="track-line" style="left:50%"></div><div class="track-line" style="left:75%"></div>
-        <div id="receptors">
-            <div class="receptor" id="rec-0">D</div><div class="receptor" id="rec-1">F</div>
-            <div class="receptor" id="rec-2">J</div><div class="receptor" id="rec-3">K</div>
+    <div id="tutorialScreen" class="screen hidden">
+        <div class="card modal-content">
+            <h2>TUTORIAL</h2>
+            <p>Acompanhe o ritmo da música tocando nas notas quando elas cruzarem a linha branca na parte inferior.</p>
+            <p><strong>Controles PC:</strong> Teclas [D] [F] [J] [K]</p>
+            <p><strong>Controles Mobile:</strong> Toque nas pistas correspondentes.</p>
+            <div style="margin: 15px 0;">
+                <p><span class="key-note" style="background: var(--purple-neon); box-shadow: var(--note-glow);"></span>Nota Curta: Toque rápido.</p>
+                <p><span class="key-note note-long" style="background: var(--purple-neon); box-shadow: var(--note-glow);"></span>Nota Longa: Segure até o fim.</p>
+                <p><span class="key-note fake-note"></span>Nota Falsa: <strong>NÃO TOQUE!</strong></p>
+            </div>
+            <button onclick="closeModals()">ENTENDI</button>
         </div>
     </div>
 
-    <div id="pause-screen" class="screen">
-        <div class="panel"><h1>PAUSADO</h1><button class="btn" id="resume-btn">CONTINUAR</button><button class="btn" style="background:#333; color:#fff" onclick="location.reload()">SAIR</button></div>
-    </div>
-
-    <div id="result-screen" class="screen">
-        <div class="panel">
-            <h2 id="res-title">PERFEITO!</h2>
-            <div id="res-grade" style="font-size:7rem; margin:10px 0; font-weight:bold">S</div>
-            <div id="res-stats" style="text-align:left; background:rgba(0,0,0,0.3); padding:15px; border-radius:10px; font-size:1.1rem; line-height:1.6"></div>
-            <button class="btn" onclick="location.reload()">NOVA MÚSICA</button>
+    <div id="feedbackScreen" class="screen hidden">
+        <div class="card">
+            <h2>FEEDBACK</h2>
+            <p>Sua opinião vai direto para o dono do site!</p>
+            <textarea id="feedbackText" rows="5" placeholder="Digite sua mensagem aqui..."></textarea>
+            <button onclick="sendFeedback()">ENVIAR FEEDBACK</button>
+            <button onclick="closeModals()" style="border-color: #555; color: #aaa; margin-top: 10px;">CANCELAR</button>
         </div>
     </div>
 
-    <audio id="bgm-player"></audio>
-     <script>
-    const UI = {
-        menu: document.getElementById('menu-screen'), loading: document.getElementById('loading-screen'),
-        highway: document.getElementById('highway'), gameUI: document.getElementById('game-ui'),
-        pause: document.getElementById('pause-screen'), result: document.getElementById('result-screen'),
-        player: document.getElementById('bgm-player'), receptors: Array.from(document.querySelectorAll('.receptor')),
-        hpBar: document.getElementById('hp-bar'), comboDiv: document.getElementById('combo-display'),
-        judgment: document.getElementById('judgment'), scoreText: document.getElementById('score-text'),
-        accText: document.getElementById('acc-text'), error: document.getElementById('error-log')
-    };
-
-    let audioCtx, audioBuffer, state = {
-        isPlaying: false, isPaused: false, map: [], activeNotes: [],
-        startTime: 0, pauseTime: 0, timeOffset: 0,
-        stats: { score: 0, combo: 0, maxCombo: 0, hits: 0, perfect: 0, good: 0, bad: 0, miss: 0, hp: 100 }
-    };
-
-    const CONFIG = {
-        keys: ['d', 'f', 'j', 'k'],
-        scrollTime: 1.5, // Segundos para a nota descer
-        windows: { perfect: 0.06, good: 0.12, bad: 0.18 }
-    };
-
-    // --- Seleção de Arquivo ---
-    document.getElementById('audio-upload').onchange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-        UI.player.src = URL.createObjectURL(file);
-        document.getElementById('file-label').innerText = "✅ " + file.name.substring(0, 15) + "...";
-    };
-
-    // --- Motor de Análise Rítmica (Beat Detection) ---
-    async function analyzeAudio(buffer, diff) {
-        const data = buffer.getChannelData(0);
-        const sampleRate = buffer.sampleRate;
-        const map = [];
-        const sensitivity = 0.98 - (diff * 0.1); 
+    <div id="gameScreen" class="screen hidden" style="background: var(--bg-black); padding: 0;">
+        <div id="hud">
+            <div><span id="accTxt">0.0000</span>%</div>
+            <div id="comboCount">0</div>
+        </div>
+        <div id="celebration">100 COMBO!</div>
+        <div id="judgment"></div>
         
-        let maxPeak = 0;
-        for (let i = 0; i < data.length; i += 1000) if(Math.abs(data[i]) > maxPeak) maxPeak = Math.abs(data[i]);
+        <div id="gameArea">
+            <div id="hitLine"></div>
+            <div class="lane" id="lane0"><div class="lane-highlight"></div></div>
+            <div class="lane" id="lane1"><div class="lane-highlight"></div></div>
+            <div class="lane" id="lane2"><div class="lane-highlight"></div></div>
+            <div class="lane" id="lane3"><div class="lane-highlight"></div></div>
+        </div>
+    </div>
 
-        const threshold = maxPeak * sensitivity;
-        const minSpacing = 0.18 - (diff * 0.02); // Espaçamento entre notas
-        let lastNoteTime = 0;
+    <div id="resultScreen" class="screen hidden">
+        <div class="card">
+            <h2>RESULTADO</h2>
+            <div id="gradeDisplay">S+</div>
+            <div style="width: 80%; margin: 0 auto 20px auto;">
+                <div class="stat-line">Precisão: <span id="finalAcc">0.0000%</span></div>
+                <div class="stat-line">Maior Combo: <span id="finalCombo">0</span></div>
+                <div style="border-top: 1px solid #444; margin: 10px 0;"></div>
+                <div class="stat-line" style="color: cyan;">PERFECT: <span id="pCount">0</span></div>
+                <div class="stat-line" style="color: lime;">VERY GOOD: <span id="vgCount">0</span></div>
+                <div class="stat-line" style="color: yellow;">GOOD: <span id="gCount">0</span></div>
+                <div class="stat-line" style="color: orange;">BAD: <span id="bCount">0</span></div>
+                <div class="stat-line" style="color: red;">MISS: <span id="mCount">0</span></div>
+            </div>
+            <button onclick="resetGame()">JOGAR NOVAMENTE</button>
+            <button id="exportBtn" style="border-color: cyan; color: cyan;">EXPORTAR CLIPE (3-6s)</button>
+        </div>
+    </div>
 
-        for (let i = 0; i < data.length; i += 500) {
-            const time = i / sampleRate;
-            if (Math.abs(data[i]) > threshold && (time - lastNoteTime) > minSpacing) {
-                map.push({ time, col: Math.floor(Math.random() * 4), hit: false, id: `n-${i}` });
-                lastNoteTime = time;
+    <audio id="bgMusic" loop>
+        <source src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA=" type="audio/wav">
+    </audio>
+
+    <script>
+        // Configurações e Estado do Jogo
+        let difficulty = 5;
+        let isPlaying = false;
+        let noteCounter = 0;
+        let notes = [];
+        let stats = { combo: 0, maxCombo: 0, perfect: 0, veryGood: 0, good: 0, bad: 0, miss: 0, totalProcessed: 0, points: 0, maxPossiblePoints: 0 };
+        const comboMilestones = [1, 5, 10, 25, 50, 75, 100, 250, 500, 750, 1000, 1500, 2000, 2500, 3000];
+        
+        // Elementos DOM
+        const screens = {
+            loading: document.getElementById('loadingScreen'),
+            menu: document.getElementById('menuScreen'),
+            tutorial: document.getElementById('tutorialScreen'),
+            feedback: document.getElementById('feedbackScreen'),
+            game: document.getElementById('gameScreen'),
+            result: document.getElementById('resultScreen')
+        };
+        const audio = document.getElementById('bgMusic');
+        const judgmentEl = document.getElementById('judgment');
+        const comboEl = document.getElementById('comboCount');
+        const accEl = document.getElementById('accTxt');
+        const celebrationEl = document.getElementById('celebration');
+
+        // Mapeamento de Teclas PC
+        const keyMap = { 'd': 0, 'f': 1, 'j': 2, 'k': 3 };
+
+        // Inicialização
+        window.onload = () => {
+            setTimeout(() => {
+                showScreen('menu');
+            }, 2000); // Tela de carregamento simbólica
+        };
+
+        // Gerenciamento de Telas
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.add('hidden'));
+            screens[screenName].classList.remove('hidden');
+        }
+
+        function closeModals() {
+            showScreen('menu');
+        }
+
+        // Slider de Dificuldade
+        const slider = document.getElementById('diffSlider');
+        const diffLabel = document.getElementById('diffLabel');
+        const diffDesc = document.getElementById('diffDesc');
+        slider.oninput = function() {
+            difficulty = parseInt(this.value);
+            diffLabel.innerText = difficulty;
+            let desc = "";
+            if(difficulty <= 4) desc = "Tempo fácil, ritmo lento e sem notas falsas.";
+            else if(difficulty <= 7) desc = "Ritmo médio e algumas notas falsas.";
+            else desc = "Rápido! 35% de notas falsas aparecerão. Boa sorte!";
+            diffDesc.innerText = desc;
+        };
+
+        // Funções de Menu
+        function showTutorial() { showScreen('tutorial'); }
+        function showFeedback() { showScreen('feedback'); }
+        function sendFeedback() {
+            const text = document.getElementById('feedbackText').value;
+            if(text.trim()) {
+                alert("Obrigado! Seu feedback foi enviado para a caixa de entrada do dono.");
+                document.getElementById('feedbackText').value = "";
+                closeModals();
+            } else {
+                alert("Por favor, digite uma mensagem.");
             }
         }
-        state.map = map;
-        state.totalNotes = map.length;
-    }
 
-    // --- Botão Start ---
-    document.getElementById('start-btn').onclick = async () => {
-        if (!UI.player.src) { UI.error.innerText = "Selecione uma música primeiro!"; return; }
-        
-        UI.menu.classList.remove('active');
-        UI.loading.classList.add('active');
+        // Motor do Jogo
+        let spawnInterval;
+        let gameTicker;
+        const totalNotesInTrack = 80; // Duração simbólica da música
 
-        try {
-            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            const file = document.getElementById('audio-upload').files[0];
-            const arrayBuffer = await file.arrayBuffer();
-            audioBuffer = await audioCtx.decodeAudioData(arrayBuffer);
-            
-            const diff = parseInt(document.getElementById('diff-select').value);
-            CONFIG.scrollTime = 2.0 - (diff * 0.25);
-            
-            await analyzeAudio(audioBuffer, diff);
-            initGame();
-        } catch (err) {
-            UI.error.innerText = "Erro ao processar áudio.";
-            UI.loading.classList.remove('active');
-            UI.menu.classList.add('active');
-        }
-    };
-         // --- Lógica de Execução ---
-    function initGame() {
-        UI.loading.classList.remove('active');
-        UI.highway.style.display = 'block';
-        UI.gameUI.style.display = 'block';
+        function initGame() {
+            showScreen('game');
+            resetStats();
+            isPlaying = true;
+            noteCounter = 0;
+            notes = [];
+            audio.play().catch(()=>{}); // Inicia áudio silencioso
 
-        state.stats = { score: 0, combo: 0, maxCombo: 0, hits: 0, perfect: 0, good: 0, bad: 0, miss: 0, hp: 100 };
-        state.activeNotes = [];
-        updateHUD();
+            // Velocidade e Spawn baseados na dificuldade
+            let speed = 4 + (difficulty * 0.6);
+            let spawnRate = 1200 - (difficulty * 70);
 
-        UI.player.currentTime = 0;
-        UI.player.play();
-        state.startTime = audioCtx.currentTime;
-        state.isPlaying = true;
-        
-        UI.player.onended = () => finishGame(true);
-        requestAnimationFrame(updateFrame);
-    }
+            // Loop de criação de notas
+            spawnInterval = setInterval(() => {
+                if(!isPlaying || noteCounter >= totalNotesInTrack) {
+                    clearInterval(spawnInterval);
+                    if(noteCounter >= totalNotesInTrack) setTimeout(endGame, 3000); // Espera últimas notas caírem
+                    return;
+                }
+                
+                // Determina tipo de nota
+                let laneIdx = Math.floor(Math.random() * 4);
+                let type = 'short';
+                let isFake = false;
 
-    function updateFrame() {
-        if (!state.isPlaying || state.isPaused) return;
+                // Lógica de nota falsa (Difficulty 4+)
+                if(difficulty > 4) {
+                    let fakeThreshold = difficulty > 7 ? 0.35 : 0.15;
+                    if(Math.random() < fakeThreshold) isFake = true;
+                }
 
-        const now = audioCtx.currentTime - state.startTime + state.timeOffset;
-        const hHeight = UI.highway.clientHeight;
-        const hitY = hHeight * 0.90; // Receptor a 90% da altura
+                // Lógica de nota longa (não fake)
+                if(!isFake && Math.random() < 0.15) type = 'long';
 
-        // Spawn de Notas
-        while (state.map.length > 0 && state.map[0].time <= now + CONFIG.scrollTime) {
-            const n = state.map.shift();
-            const div = document.createElement('div');
-            div.className = `note note-${n.col}`;
-            div.id = n.id;
-            div.style.left = `calc(${n.col * 25}% + 6px)`;
-            UI.highway.appendChild(div);
-            state.activeNotes.push(n);
+                createNote(laneIdx, speed, type, isFake);
+                noteCounter++;
+            }, spawnRate);
+
+            // Loop de atualização da posição das notas (60 FPS simbólico)
+            gameTicker = setInterval(() => {
+                if(!isPlaying) {
+                    clearInterval(gameTicker);
+                    return;
+                }
+                updateNotes();
+            }, 1000/60);
         }
 
-        // Movimentação e Miss
-        for (let i = state.activeNotes.length - 1; i >= 0; i--) {
-            const n = state.activeNotes[i];
-            const el = document.getElementById(n.id);
-            if (!el) continue;
+        function createNote(laneIdx, speed, type, isFake) {
+            const lane = document.getElementById('lane' + laneIdx);
+            const noteEl = document.createElement('div');
+            noteEl.className = 'note';
+            if(type === 'long') noteEl.classList.add('note-long');
+            if(isFake) noteEl.classList.add('fake-note');
+            
+            noteEl.style.top = '-100px'; // Spawn fora da tela
+            lane.appendChild(noteEl);
 
-            const diff = n.time - now;
-            const pos = (1 - (diff / CONFIG.scrollTime)) * hitY;
-            el.style.transform = `translateY(${pos}px)`;
+            notes.push({
+                el: noteEl,
+                lane: laneIdx,
+                y: -100,
+                speed: speed,
+                type: type,
+                isFake: isFake,
+                processed: false
+            });
+            stats.maxPossiblePoints += isFake ? 0 : 1; // Notas fake não contam ponto positivo
+        }
 
-            if (diff < -CONFIG.windows.bad) {
-                handleHit('miss');
-                el.remove();
-                state.activeNotes.splice(i, 1);
+        function updateNotes() {
+            for (let i = notes.length - 1; i >= 0; i--) {
+                let note = notes[i];
+                note.y += note.speed;
+                note.el.style.top = note.y + 'px';
+
+                // Miss automático se passar muito da linha
+                if (!note.processed && note.y > window.innerHeight - 50) {
+                    if (!note.isFake) {
+                        registerHit('MISS');
+                    }
+                    note.processed = true;
+                }
+
+                // Remove nota se sair totalmente da tela
+                if (note.y > window.innerHeight) {
+                    note.el.remove();
+                    notes.splice(i, 1);
+                }
             }
         }
-        requestAnimationFrame(updateFrame);
-    }
 
-    // --- Inputs Profissionais (Touch + Keys) ---
-    function triggerInput(col) {
-        if (!state.isPlaying || state.isPaused) return;
-        UI.receptors[col].classList.add('active');
-        setTimeout(() => UI.receptors[col].classList.remove('active'), 100);
+        // Lógica de Input e Pontuação
+        function handleInput(laneIdx) {
+            if(!isPlaying) return;
 
-        const now = audioCtx.currentTime - state.startTime + state.timeOffset;
-        const targetIdx = state.activeNotes.findIndex(n => n.col === col && !n.hit);
+            // Feedback visual na pista
+            const lane = document.getElementById('lane' + laneIdx);
+            lane.classList.add('active-lane');
+            setTimeout(() => lane.classList.remove('active-lane'), 100);
 
-        if (targetIdx === -1) return handleHit('miss'); // Spam penalty
+            // Encontra a nota mais próxima da hitline na pista
+            let closestNote = null;
+            let minDist = Infinity;
 
-        const n = state.activeNotes[targetIdx];
-        const gap = Math.abs(n.time - now);
+            for(let note of notes) {
+                if(note.lane === laneIdx && !note.processed) {
+                    let noteCenter = note.type === 'long' ? note.y + 40 : note.y + 12.5;
+                    let hitLineTop = window.innerHeight - 100;
+                    let dist = Math.abs(noteCenter - hitLineTop);
+                    if(dist < minDist && dist < 100) { // Janela de hit de 100px
+                        minDist = dist;
+                        closestNote = note;
+                    }
+                }
+            }
 
-        if (gap <= CONFIG.windows.bad) {
-            n.hit = true;
-            document.getElementById(n.id).remove();
-            state.activeNotes.splice(targetIdx, 1);
-            
-            if (gap <= CONFIG.windows.perfect) handleHit('perfect');
-            else if (gap <= CONFIG.windows.good) handleHit('good');
-            else handleHit('bad');
-        } else {
-            handleHit('miss');
-        }
-    }
+            if(closestNote) {
+                closestNote.processed = true;
+                closestNote.el.style.opacity = '0.3'; // Feedback visual na nota
 
-    window.onkeydown = (e) => {
-        if (e.key === 'Escape') togglePause();
-        const idx = CONFIG.keys.indexOf(e.key.toLowerCase());
-        if (idx !== -1 && !e.repeat) triggerInput(idx);
-    };
-
-    UI.receptors.forEach((r, i) => {
-        r.ontouchstart = (e) => { e.preventDefault(); triggerInput(i); };
-        r.onmousedown = () => triggerInput(i);
-    });
-
-    // --- Sistema de Regras ---
-    function handleHit(type) {
-        const s = state.stats;
-        s[type]++;
-        s.hits++;
-
-        if (type === 'miss') {
-            s.combo = 0;
-            s.hp -= 10;
-            if (window.navigator.vibrate) navigator.vibrate(50);
-        } else {
-            s.combo++;
-            s.hp = Math.min(100, s.hp + 2);
-            if (s.combo > s.maxCombo) s.maxCombo = s.combo;
+                if(closestNote.isFake) {
+                    registerHit('MISS'); // Tocou em nota falsa
+                } else {
+                    // Avaliação de precisão baseada na distância
+                    if(minDist < 20) registerHit('PERFECT');
+                    else if(minDist < 40) registerHit('VERY GOOD');
+                    else if(minDist < 60) registerHit('GOOD');
+                    else registerHit('BAD');
+                }
+            }
         }
 
-        const mult = Math.max(1, Math.floor(s.combo / 10));
-        s.score += (type === 'perfect' ? 300 : type === 'good' ? 100 : 50) * mult;
-        
-        showJudgment(type);
-        updateHUD();
-        if (s.hp <= 0) finishGame(false);
-    }
+        function registerHit(judgment) {
+            stats.totalProcessed++;
+            judgmentEl.innerText = judgment;
+            judgmentEl.style.animation = 'none';
+            void judgmentEl.offsetWidth; // Trigger reflow
+            judgmentEl.style.animation = 'judgmentFade 0.5s ease forwards';
 
-    function showJudgment(type) {
-        const colors = { perfect: '#00ffcc', good: '#00ff00', bad: '#ffaa00', miss: '#ff3366' };
-        UI.judgment.innerText = type.toUpperCase();
-        UI.judgment.style.color = colors[type];
-        UI.comboDiv.style.opacity = 1;
-        document.getElementById('combo-num').innerText = state.stats.combo;
-    }
+            let points = 0;
+            judgmentEl.style.color = 'white';
 
-    function updateHUD() {
-        UI.scoreText.innerText = state.stats.score.toLocaleString();
-        UI.hpBar.style.width = state.stats.hp + "%";
-        UI.hpBar.style.background = state.stats.hp < 30 ? "var(--danger)" : "var(--primary)";
-        const acc = (state.stats.perfect + state.stats.good*0.7) / (state.stats.hits || 1) * 100;
-        UI.accText.innerText = acc.toFixed(1) + "%";
-    }
+            switch(judgment) {
+                case 'PERFECT': stats.perfect++; points = 1; stats.combo++; judgmentEl.style.color = 'cyan'; break;
+                case 'VERY GOOD': stats.veryGood++; points = 0.8; stats.combo++; judgmentEl.style.color = 'lime'; break;
+                case 'GOOD': stats.good++; points = 0.5; stats.combo++; judgmentEl.style.color = 'yellow'; break;
+                case 'BAD': stats.bad++; points = 0.2; stats.combo = 0; judgmentEl.style.color = 'orange'; break;
+                case 'MISS': stats.miss++; points = 0; stats.combo = 0; judgmentEl.style.color = 'red'; break;
+            }
 
-    function togglePause() {
-        if (state.isPaused) {
-            UI.pause.classList.remove('active');
-            state.startTime = audioCtx.currentTime - state.pauseTime;
-            UI.player.play();
-            state.isPaused = false;
-            requestAnimationFrame(updateFrame);
-        } else {
-            UI.pause.classList.add('active');
-            UI.player.pause();
-            state.pauseTime = audioCtx.currentTime - state.startTime;
-            state.isPaused = true;
-        }
-    }
-
-    document.getElementById('resume-btn').onclick = togglePause;
-
-    function finishGame(cleared) {
-        state.isPlaying = false;
-        UI.player.pause();
-        UI.highway.style.display = 'none';
-        UI.gameUI.style.display = 'none';
-        UI.result.classList.add('active');
-
-        const acc = parseFloat(UI.accText.innerText);
-        let grade = "F";
-        if (cleared) {
-            if (acc > 95) grade = "S";
-            else if (acc > 85) grade = "A";
-            else if (acc > 70) grade = "B";
-            else grade = "C";
+            stats.points += points;
+            updateHUD();
+            if(stats.combo > stats.maxCombo) stats.maxCombo = stats.combo;
+            checkCelebration();
         }
 
-        document.getElementById('res-title').innerText = cleared ? "MÚSICA CONCLUÍDA!" : "FALHOU...";
-        document.getElementById('res-grade').innerText = grade;
-        document.getElementById('res-grade').style.color = grade === "S" ? "var(--primary)" : "white";
-        document.getElementById('res-stats').innerHTML = `
-            <b>PONTUAÇÃO:</b> ${state.stats.score.toLocaleString()}<br>
-            <b>COMBO MÁXIMO:</b> ${state.stats.maxCombo}<br>
-            <b>PRECISÃO:</b> ${acc}%<br><br>
-            <span style="color:#00ffcc">PERFECTS: ${state.stats.perfect}</span><br>
-            <span style="color:#ff3366">ERROS: ${state.stats.miss + (state.totalNotes - state.stats.hits)}</span>
-        `;
-    }
-</script>
-</body>
-</html>
+        function updateHUD() {
+            // Pontuação ultra-precisa 0.0000%
+            let acc = stats.maxPossiblePoints === 0 ? 0 : (stats.points / stats.maxPossiblePoints) * 100;
+            if(acc > 100) acc = 100; // Proteção contra fakes erradas aumentando max points
+            accEl.innerText = acc.toFixed(4);
+           
